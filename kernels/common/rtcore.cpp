@@ -38,6 +38,8 @@
 #include "c:\Users\evanwaxman\Documents\workspace\embree\kernels\geometry\triangle.h"
 #include "c:\Users\evanwaxman\Documents\workspace\embree\kernels\geometry\curveNv.h"
 #include "c:\Users\evanwaxman\Documents\workspace\embree\kernels\subdiv\bezier_curve.h"
+
+//#define GEN_FILES
 /************************************************************************************************************/
 
 
@@ -252,6 +254,7 @@ namespace embree
     scene->commit(false);
 
 	/**********************************  MY EDITS  **********************************************/
+#ifdef GEN_FILES
 	// create bvh pointers
 	BVH4* bvh4 = nullptr;
 	BVH8* bvh8 = nullptr;
@@ -1023,6 +1026,7 @@ namespace embree
 	primbin.close();
 	//bvhtxt.close();
 	//primtxt.close();
+#endif
 	/***********************************************************************************/
 
     RTC_CATCH_END2(scene);

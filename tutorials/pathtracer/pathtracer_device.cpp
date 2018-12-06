@@ -21,11 +21,13 @@
 #include "../common/tutorial/scene_device.h"
 #include "../common/tutorial/optics.h"
 
-/***MY INCLUDES***/
+/**********MY EDITS**********/
 #include <iostream>
 #include <fstream>
-//#include <chrono>
-/*****************/
+
+//#define GEN_FILES
+#define RUN_SEQUENTIAL
+/****************************/
 
 namespace embree {
 
@@ -1646,10 +1648,10 @@ Vec3fa renderPixelFunction(float x, float y, RandomSampler& sampler, const ISPCC
 
 
 	/***************************************MY EDITS**************************************/
-
-	/***WRITE RAYS TO BIN FILES HERE***/
+#ifdef GEN_FILES
 	ray.id = myRayID;
 
+	/***WRITE RAYS TO BIN FILES HERE***/
 	if (i == 0) {
 		// write 32-bit ray id
 		rayarray[3] = ray.id & 0xff;
@@ -2018,12 +2020,13 @@ Vec3fa renderPixelFunction(float x, float y, RandomSampler& sampler, const ISPCC
 		bounce7RayBin.write(&tempChar[1], 1);
 		bounce7RayBin.write(&tempChar[0], 1);
 	}
-
+#endif
 	//std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
 	// intersect ray with scene
     rtcIntersect1(g_scene,&context.context,RTCRayHit_(ray));
 
+#ifdef GEN_FILES
 	/***WRITE INTERSECTIONS TO BIN FILES HERE***/
 	if (i == 0) {
 		// write 32-bit ray id
@@ -2265,7 +2268,7 @@ Vec3fa renderPixelFunction(float x, float y, RandomSampler& sampler, const ISPCC
 		bounce7IntersectionBin.write(&tempChar[1], 1);
 		bounce7IntersectionBin.write(&tempChar[0], 1);
 	}
-
+#endif
 
 	//std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
 
@@ -2555,6 +2558,7 @@ extern "C" void device_render (int* pixels,
   std::cout << "FRAME START" << std::endl;
 
   // open raybin file, where new data is appended to the end of file
+#ifdef GEN_FILES
   primaryRayBin.open("C:/Users/evanwaxman/Documents/workspace/embree/primaryRay.bin", std::ios::out | std::ios::binary);
   bounce1RayBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce1Ray.bin", std::ios::out | std::ios::binary);
   bounce2RayBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce2Ray.bin", std::ios::out | std::ios::binary);
@@ -2571,11 +2575,20 @@ extern "C" void device_render (int* pixels,
   bounce5IntersectionBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce5Intersection.bin", std::ios::out | std::ios::binary);
   bounce6IntersectionBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce6Intersection.bin", std::ios::out | std::ios::binary);
   bounce7IntersectionBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce7Intersection.bin", std::ios::out | std::ios::binary);
+#endif
 
+#ifdef RUN_SEQUENTIAL
   for (size_t i = 0; i < (numTilesX*numTilesX); i++) {
 	  renderTileTask((int)i, 0, pixels, width, height, time, camera, numTilesX, numTilesY);
   }
-
+#else 
+  parallel_for(size_t(0),size_t(numTilesX*numTilesY),[&](const range<size_t>& range) {
+  const int threadIndex = (int)TaskScheduler::threadIndex();
+  for (size_t i=range.begin(); i<range.end(); i++)
+	renderTileTask((int)i,threadIndex,pixels,width,height,time,camera,numTilesX,numTilesY);
+  });
+#endif
+#ifdef GEN_FILES
   primaryRayBin.close();
   bounce1RayBin.close();
   bounce2RayBin.close();
@@ -2592,18 +2605,11 @@ extern "C" void device_render (int* pixels,
   bounce5IntersectionBin.close();
   bounce6IntersectionBin.close();
   bounce7IntersectionBin.close();
-
+#endif
   std::cout << "FRAME END" << std::endl;
   //std::cout << "INTERSECT TIME = " << intersectTime.count() << "seconds.";
   /*************/
   
-
-
-  /*parallel_for(size_t(0),size_t(numTilesX*numTilesY),[&](const range<size_t>& range) {
-    const int threadIndex = (int)TaskScheduler::threadIndex();
-    for (size_t i=range.begin(); i<range.end(); i++)
-      renderTileTask((int)i,threadIndex,pixels,width,height,time,camera,numTilesX,numTilesY);
-  });*/
   //rtcDebug();
 } // device_render
 
