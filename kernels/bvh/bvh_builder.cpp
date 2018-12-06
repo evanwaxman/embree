@@ -27,8 +27,10 @@ namespace embree
         return createLeaf(prims,set,alloc);
       };
       
-      settings.branchingFactor = N;
-      settings.maxDepth = BVH::maxBuildDepthLeaf;
+      //settings.branchingFactor = N;
+	  settings.branchingFactor = 4;
+
+	  settings.maxDepth = BVH::maxBuildDepthLeaf;
       return BVHBuilderBinnedSAH::build<NodeRef>
         (FastAllocator::Create(allocator),typename BVH::AlignedNode::Create2(),typename BVH::AlignedNode::Set3(allocator,prims),createLeafFunc,progressFunc,prims,pinfo,settings);
     }
@@ -41,8 +43,10 @@ namespace embree
         return createLeaf(prims,set,alloc);
       };
             
-      settings.branchingFactor = N;
-      settings.maxDepth = BVH::maxBuildDepthLeaf;
+      //settings.branchingFactor = N;
+	  settings.branchingFactor = 4;
+
+	  settings.maxDepth = BVH::maxBuildDepthLeaf;
       return BVHBuilderBinnedSAH::build<NodeRef>
         (FastAllocator::Create(allocator),typename BVH::QuantizedNode::Create2(),typename BVH::QuantizedNode::Set2(),createLeafFunc,progressFunc,prims,pinfo,settings);
     }
@@ -54,8 +58,10 @@ namespace embree
         return createLeaf(prims,set,alloc);
       };
 
-      settings.branchingFactor = N;
-      settings.maxDepth = BVH::maxBuildDepthLeaf;
+      //settings.branchingFactor = N;
+	  settings.branchingFactor = 4;
+	  
+	  settings.maxDepth = BVH::maxBuildDepthLeaf;
       return BVHBuilderBinnedSAH::build<NodeRecordMB>
         (FastAllocator::Create(allocator),typename BVH::AlignedNodeMB::Create2(),typename BVH::AlignedNodeMB::Set2TimeRange(timeRange),createLeafFunc,progressFunc,prims,pinfo,settings);
     }

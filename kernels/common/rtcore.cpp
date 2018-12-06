@@ -26,6 +26,21 @@
 #include "context.h"
 #include "../../include/embree3/rtcore_ray.h"
 
+/********************************************** MY EDITS ****************************************************/
+#include "../../kernels/bvh/bvh.h"
+#include "../../kernels/geometry/trianglev.h"
+#include "C:\Users\evanwaxman\Documents\workspace\embree\kernels\common\accel.h"
+#include <queue>
+#include <iostream>
+#include <fstream>
+#include "C:\Users\evanwaxman\Documents\workspace\embree\kernels\common\scene_instance.h"
+#include "c:\Users\evanwaxman\Documents\workspace\embree\tutorials\common\tutorial\tutorial_device.h"
+#include "c:\Users\evanwaxman\Documents\workspace\embree\kernels\geometry\triangle.h"
+#include "c:\Users\evanwaxman\Documents\workspace\embree\kernels\geometry\curveNv.h"
+#include "c:\Users\evanwaxman\Documents\workspace\embree\kernels\subdiv\bezier_curve.h"
+/************************************************************************************************************/
+
+
 namespace embree
 {  
   /* mutex to make API thread safe */
@@ -235,6 +250,781 @@ namespace embree
     RTC_TRACE(rtcCommitScene);
     RTC_VERIFY_HANDLE(hscene);
     scene->commit(false);
+
+	/**********************************  MY EDITS  **********************************************/
+	// create bvh pointers
+	BVH4* bvh4 = nullptr;
+	BVH8* bvh8 = nullptr;
+
+	// create aligned node pointers
+	BVH4::AlignedNode* n4 = nullptr;
+	BVH8::AlignedNode* n8 = nullptr;
+
+	// node queue holds the node references for inner and leaf nodes
+	std::queue<BVH4::NodeRef> nodeQueue4;
+	std::queue<BVH8::NodeRef> nodeQueue8;
+
+	// id queue holds the node id's so that correct order is maintained
+	std::queue<unsigned long long> idQueue;
+
+	// bounds queue holds the leaf node bounds so that it can be referenced when calculating the leaf
+	// node's primitive's coordinates.
+	std::queue<BBox3fa> boundsQueue;
+
+	// create binary files for the bvh structure, as well as the primitives. (refer to asana for content structure)
+	std::ofstream bvhbin("C:/Users/evanwaxman/Documents/workspace/embree/bvh.bin", std::ios::out | std::ios::binary);
+	std::ofstream primbin("C:/Users/evanwaxman/Documents/workspace/embree/prim.bin", std::ios::out | std::ios::binary);
+
+	// create text files for the bvh structure, as well as the primitives. (refer to asana for content structure)
+	//std::ofstream bvhtxt("C:/Users/evanwaxman/Documents/workspace/embree/bvh.txt");
+	//std::ofstream primtxt("C:/Users/evanwaxman/Documents/workspace/embree/primitives.txt");
+
+	// NOTE: the current code only supports scenes with only triangles (for now)
+	if (bvhbin.is_open() && primbin.is_open()) {
+		AccelData* accel = ((Accel*)scene)->intersectors.ptr;
+
+		//=================================================BVH4 CODE==========================================
+		if (accel->type == AccelData::TY_BVH4) {
+			bvh4 = (BVH4*)accel;
+			BVH4::NodeRef node = bvh4->root;
+			std::cout << "***********************************TY_BVH4*********************************************\n";
+
+			// initialize queue with root node and root id
+			nodeQueue4.push(node);
+			idQueue.push(0);
+
+			// loop until entire bvh structure is search
+			while (!(nodeQueue4.empty())) {
+				// point tempNode to next node ref (can be inner or leaf node)
+				BVH4::NodeRef tempNode = nodeQueue4.front();
+				nodeQueue4.pop();
+
+				// assign tempID to the correct node ID corrisponding to tempNode
+				const unsigned long long tempID = idQueue.front();
+				idQueue.pop();
+
+				/**********************************************************************************************
+				*	check if tempNode is a leaf node calling isLeaf() and type()
+				*
+				*	isLeaf() will return:
+				*		-	8 if the node is a leaf node
+				*		NOTE: It was also return 8 if the node is empty, which is why type() must also be called.
+				*		You could just use type() to check for leaf node, but be why not be safe.
+				*	type() will return:
+				*		-	9-15 if it's a leaf node (each number representing one of 8 leaf nodes belonging to
+				*			an inner node)
+				**********************************************************************************************/
+				if ((tempNode.type() > 8 && tempNode.type() < 16) && tempNode.isLeaf() > 0) {	//leaf node
+					// used to hold leaf number with respect to the other 8 leaves assigned to an inner node
+					size_t num;
+
+					// create bounding box objext
+					BBox3fa b;
+
+					// get bounding box for the tempNode leaf
+					b = boundsQueue.front();
+					boundsQueue.pop();
+
+					// check the geometry type for the leaf node
+					if (scene->geometries[0]->gtype == 16) {		// GTY_TRIANGLE_MESH
+						
+						// cast the tempNode leaf as the appropriate primitive type (based on the geometry type)
+						Triangle4* tri = (Triangle4*)tempNode.leaf(num);
+
+						
+						// write leaf node info to bvh file
+						/***************	FOR TXT FILE	********************
+						bvhtxt << tempID << " 2 " << tri->size() << " " << b.lower.x << " " << b.lower.y << " " << b.lower.z << " "
+							<< b.upper.x << " " << b.upper.y << " " << b.upper.z << "\n";
+						*******************************************************/
+						
+						/***************	FOR BIN FILE	********************/
+						char bvharray[10];
+
+						// write 64-bit node id
+						bvharray[7] = tempID & 0xff;
+						bvharray[6] = (tempID >> 8) & 0xff;
+						bvharray[5] = (tempID >> 16) & 0xff;
+						bvharray[4] = (tempID >> 24) & 0xff;
+						bvharray[3] = (tempID >> 32) & 0xff;
+						bvharray[2] = (tempID >> 40) & 0xff;
+						bvharray[1] = (tempID >> 48) & 0xff;
+						bvharray[0] = (tempID >> 56) & 0xff;
+
+						// write 8-bit node type (1 for inner node, 2 for leaf node)
+						bvharray[8] = 2 & 0xff;
+
+						// write 8-bit number of leaf children (number of primitives)
+						bvharray[9] = tri->size() & 0xff;
+						bvhbin.write(bvharray, 10);
+
+						// write 6 32-bit float coordinates for the leaf node
+						// NOTE: writes most significant float byte first
+						char* tempChar;
+						tempChar = (char *)&b.lower.x;
+						bvhbin.write(&tempChar[3], 1);
+						bvhbin.write(&tempChar[2], 1);
+						bvhbin.write(&tempChar[1], 1);
+						bvhbin.write(&tempChar[0], 1);
+
+						tempChar = (char *)&b.lower.y;
+						bvhbin.write(&tempChar[3], 1);
+						bvhbin.write(&tempChar[2], 1);
+						bvhbin.write(&tempChar[1], 1);
+						bvhbin.write(&tempChar[0], 1);
+
+						tempChar = (char *)&b.lower.z;
+						bvhbin.write(&tempChar[3], 1);
+						bvhbin.write(&tempChar[2], 1);
+						bvhbin.write(&tempChar[1], 1);
+						bvhbin.write(&tempChar[0], 1);
+
+						tempChar = (char *)&b.upper.x;
+						bvhbin.write(&tempChar[3], 1);
+						bvhbin.write(&tempChar[2], 1);
+						bvhbin.write(&tempChar[1], 1);
+						bvhbin.write(&tempChar[0], 1);
+
+						tempChar = (char *)&b.upper.y;
+						bvhbin.write(&tempChar[3], 1);
+						bvhbin.write(&tempChar[2], 1);
+						bvhbin.write(&tempChar[1], 1);
+						bvhbin.write(&tempChar[0], 1);
+
+						tempChar = (char *)&b.upper.z;
+						bvhbin.write(&tempChar[3], 1);
+						bvhbin.write(&tempChar[2], 1);
+						bvhbin.write(&tempChar[1], 1);
+						bvhbin.write(&tempChar[0], 1);
+						/*******************************************************/
+
+
+						// write primitive info to primitive file
+						//for (size_t i = 0; i < num; i++) {
+						for (size_t j = 0; j < tri->size(); j++) {
+
+							/***************	FOR TXT FILE	********************
+							primtxt << tempID << " 1 " << tri->geomID(j) << " " << tri->primID(j) <<
+								" " << tri->v0.x[j] << " " << tri->v0.y[j] << " " << tri->v0.z[j] <<
+								" " << tri->v0.x[j] - tri->e1.x[j] << " " << tri->v0.y[j] - tri->e1.y[j] << " " << tri->v0.z[j] - tri->e1.z[j] <<
+								" " << tri->v0.x[j] + tri->e2.x[j] << " " << tri->v0.y[j] + tri->e2.y[j] << " " << tri->v0.z[j] + tri->e2.z[j] << std::endl;
+							*******************************************************/
+
+							/***************	FOR BIN FILE	********************/
+							char primarray[13];
+
+							// write 64-bit node id
+							primarray[3] = tempID & 0xff;
+							primarray[2] = (tempID >> 8) & 0xff;
+							primarray[1] = (tempID >> 16) & 0xff;
+							primarray[0] = (tempID >> 24) & 0xff;
+
+							// write 8-bit number of primitives in leaf node
+							primarray[4] = tri->size() & 0xff;
+
+							// write 32-bit geometry id
+							primarray[8] = tri->geomID(j) & 0xff;
+							primarray[7] = (tri->geomID(j) >> 8) & 0xff;
+							primarray[6] = (tri->geomID(j) >> 16) & 0xff;
+							primarray[5] = (tri->geomID(j) >> 24) & 0xff;
+
+							// write 32-bit primitive id
+							primarray[12] = tri->primID(j) & 0xff;
+							primarray[11] = (tri->primID(j) >> 8) & 0xff;
+							primarray[10] = (tri->primID(j) >> 16) & 0xff;
+							primarray[9] = (tri->primID(j) >> 24) & 0xff;
+							primbin.write(primarray, 13);
+
+
+							// write 6 32-bit float coordinates for the leaf node
+							// NOTE: writes most significant float byte first
+							float tempFloat;
+							char* tempChar;
+							tempChar = (char *)&tri->v0.x[j];
+							primbin.write(&tempChar[3], 1);
+							primbin.write(&tempChar[2], 1);
+							primbin.write(&tempChar[1], 1);
+							primbin.write(&tempChar[0], 1);
+
+							tempChar = (char *)&tri->v0.y[j];
+							primbin.write(&tempChar[3], 1);
+							primbin.write(&tempChar[2], 1);
+							primbin.write(&tempChar[1], 1);
+							primbin.write(&tempChar[0], 1);
+
+							tempChar = (char *)&tri->v0.z[j];
+							primbin.write(&tempChar[3], 1);
+							primbin.write(&tempChar[2], 1);
+							primbin.write(&tempChar[1], 1);
+							primbin.write(&tempChar[0], 1);
+
+
+							tempFloat = tri->v0.x[j] - tri->e1.x[j];
+							tempChar = (char *)&tempFloat;
+							primbin.write(&tempChar[3], 1);
+							primbin.write(&tempChar[2], 1);
+							primbin.write(&tempChar[1], 1);
+							primbin.write(&tempChar[0], 1);
+
+							tempFloat = tri->v0.y[j] - tri->e1.y[j];
+							tempChar = (char *)&tempFloat;
+							primbin.write(&tempChar[3], 1);
+							primbin.write(&tempChar[2], 1);
+							primbin.write(&tempChar[1], 1);
+							primbin.write(&tempChar[0], 1);
+
+							tempFloat = tri->v0.z[j] - tri->e1.z[j];
+							tempChar = (char *)&tempFloat;
+							primbin.write(&tempChar[3], 1);
+							primbin.write(&tempChar[2], 1);
+							primbin.write(&tempChar[1], 1);
+							primbin.write(&tempChar[0], 1);
+
+							tempFloat = tri->v0.x[j] + tri->e2.x[j];
+							tempChar = (char *)&tempFloat;
+							primbin.write(&tempChar[3], 1);
+							primbin.write(&tempChar[2], 1);
+							primbin.write(&tempChar[1], 1);
+							primbin.write(&tempChar[0], 1);
+
+							tempFloat = tri->v0.y[j] + tri->e2.y[j];
+							tempChar = (char *)&tempFloat;
+							primbin.write(&tempChar[3], 1);
+							primbin.write(&tempChar[2], 1);
+							primbin.write(&tempChar[1], 1);
+							primbin.write(&tempChar[0], 1);
+
+							tempFloat = tri->v0.z[j] + tri->e2.z[j];
+							tempChar = (char *)&tempFloat;
+							primbin.write(&tempChar[3], 1);
+							primbin.write(&tempChar[2], 1);
+							primbin.write(&tempChar[1], 1);
+							primbin.write(&tempChar[0], 1);
+							/*******************************************************/
+						//}
+						}
+					}
+					// note, current code does not support other geometry types (for now)
+					else if (scene->geometries[0]->gtype == 4) {	// GTY_FLAT_BEZIER_CURVE
+						//const PrimRef& prim = (PrimRef)tempNode.leaf(num);
+						Curve4v* curve = (Curve4v*)tempNode.leaf(num);
+						BezierCurve3fa* bezCurve = (BezierCurve3fa*)tempNode.leaf(num);
+						QuadraticBezierCurve3fa* quadBezCurve = (QuadraticBezierCurve3fa*)tempNode.leaf(num);
+
+						//std::cout << "\t\t\tGeomID: " << curve->geomID(0) << ", PrimID: " << curve->primID << ", Bounds: ";
+						//prim->bounds() << "\n";
+
+						std::cout << "FLAT_BEZIER_CURVE GEOMETRY" << std::endl;
+					}
+					else {
+						std::cout << "UNKNOWN GEOM TYPE" << std::endl;
+					}
+				}
+				// check if current node is an aligned node (inner node)
+				else if (tempNode.isAlignedNode()) {
+
+					// point aligned node pointer to tempNode
+					n4 = tempNode.alignedNode();
+					vector <float> lowerX;
+					vector <float> lowerY;
+					vector <float> lowerZ;
+					vector <float> upperX;
+					vector <float> upperY;
+					vector <float> upperZ;
+					unsigned int numChildren = 0;
+
+					// push children bounds to their respective coordinate vectors
+					for (int i = 0; i < 4; i++) {
+						// an empty child node will have infinite bounds, do not store and break loop
+						if (n4->bounds(i).lower.x == (float)pos_inf || n4->bounds(i).lower.x == (float)neg_inf) break;
+
+						lowerX.push_back(n4->bounds(i).lower.x);
+						lowerY.push_back(n4->bounds(i).lower.y);
+						lowerZ.push_back(n4->bounds(i).lower.z);
+						upperX.push_back(n4->bounds(i).upper.x);
+						upperY.push_back(n4->bounds(i).upper.y);
+						upperZ.push_back(n4->bounds(i).upper.z);
+						numChildren++;
+					}
+
+					// write inner node info to bvh file
+					/***************	FOR TXT FILE	********************
+					bvhtxt << tempID << " 1 " << numChildren << " " << *std::min_element(lowerX.begin(), lowerX.end()) << " "
+						<< *std::min_element(lowerY.begin(), lowerY.end()) << " " << *std::min_element(lowerZ.begin(), lowerZ.end()) << " "
+						<< *std::max_element(upperX.begin(), upperX.end()) << " " << *std::max_element(upperY.begin(), upperY.end()) << " "
+						<< *std::max_element(upperZ.begin(), upperZ.end()) << "\n";
+					*******************************************************/
+
+					/***************	FOR BIN FILE	********************/
+					char bvharray[10];
+
+					// write 64-bit node id
+					bvharray[7] = tempID & 0xff;
+					bvharray[6] = (tempID >> 8) & 0xff;
+					bvharray[5] = (tempID >> 16) & 0xff;
+					bvharray[4] = (tempID >> 24) & 0xff;
+					bvharray[3] = (tempID >> 32) & 0xff;
+					bvharray[2] = (tempID >> 40) & 0xff;
+					bvharray[1] = (tempID >> 48) & 0xff;
+					bvharray[0] = (tempID >> 56) & 0xff;
+
+					// write 8-bit node type (1 for inner node, 2 for leaf node)
+					bvharray[8] = 1 & 0xff;
+
+					// write 8-bit number of leaf children (number of primitives)
+					bvharray[9] = numChildren & 0xff;
+					bvhbin.write(bvharray, 10);
+
+					// write 6 32-bit float coordinates for the leaf node
+					// NOTE: writes most significant float byte first
+					float tempFloat;
+					char* tempChar;
+					tempFloat = *std::min_element(lowerX.begin(), lowerX.end());
+					tempChar = (char *)&tempFloat;
+					bvhbin.write(&tempChar[3], 1);
+					bvhbin.write(&tempChar[2], 1);
+					bvhbin.write(&tempChar[1], 1);
+					bvhbin.write(&tempChar[0], 1);
+
+					tempFloat = *std::min_element(lowerY.begin(), lowerY.end());
+					tempChar = (char *)&tempFloat;
+					bvhbin.write(&tempChar[3], 1);
+					bvhbin.write(&tempChar[2], 1);
+					bvhbin.write(&tempChar[1], 1);
+					bvhbin.write(&tempChar[0], 1);
+
+					tempFloat = *std::min_element(lowerZ.begin(), lowerZ.end());
+					tempChar = (char *)&tempFloat;
+					bvhbin.write(&tempChar[3], 1);
+					bvhbin.write(&tempChar[2], 1);
+					bvhbin.write(&tempChar[1], 1);
+					bvhbin.write(&tempChar[0], 1);
+
+					tempFloat = *std::max_element(upperX.begin(), upperX.end());
+					tempChar = (char *)&tempFloat;
+					bvhbin.write(&tempChar[3], 1);
+					bvhbin.write(&tempChar[2], 1);
+					bvhbin.write(&tempChar[1], 1);
+					bvhbin.write(&tempChar[0], 1);
+
+					tempFloat = *std::max_element(upperY.begin(), upperY.end());
+					tempChar = (char *)&tempFloat;
+					bvhbin.write(&tempChar[3], 1);
+					bvhbin.write(&tempChar[2], 1);
+					bvhbin.write(&tempChar[1], 1);
+					bvhbin.write(&tempChar[0], 1);
+
+					tempFloat = *std::max_element(upperZ.begin(), upperZ.end());
+					tempChar = (char *)&tempFloat;
+					bvhbin.write(&tempChar[3], 1);
+					bvhbin.write(&tempChar[2], 1);
+					bvhbin.write(&tempChar[1], 1);
+					bvhbin.write(&tempChar[0], 1);
+					/*******************************************************/
+
+					// push children to queue
+					for (int i = 0; i < 4; i++) {
+						nodeQueue4.push(n4->child(i));
+						idQueue.push(tempID * 4 + (i + 1));
+
+						// push leaf node bounds onto queue to access when current node is leaf node
+						if ((n8->child(i).type() > 8 && n8->child(i).type() < 16) && n8->child(i).isLeaf() > 0) {	// valid leaf node
+							boundsQueue.push(n4->bounds(i));
+						}
+					}
+				}
+				else if (tempNode.type() == 8) {
+					//std::cout << "\tEMPTY NODE" << "\n";
+				}
+				else {
+					std::cout << "ERROR: UNKNOWN NODE TYPE " << tempNode.type() << "\n";
+				}
+			}
+		}
+		//===================================BVH8 ONLY=============================
+		else if (accel->type == AccelData::TY_BVH8) {
+			// point bvh pointer to accel object and the node pointer to the root of the bvh
+			bvh8 = (BVH8*)accel;
+			BVH8::NodeRef node = bvh8->root;
+
+			std::cout << "***********************************TY_BVH8*********************************************\n";
+
+			// initialize node queue with root node and id queue root id
+			nodeQueue8.push(node);
+			idQueue.push(0);
+
+			// loop until entire bvh structure is search
+			while (!(nodeQueue8.empty())) {
+				// point tempNode to next node ref (can be inner or leaf node)
+				BVH8::NodeRef tempNode = nodeQueue8.front();
+				nodeQueue8.pop();
+
+				// assign tempID to the correct node ID corrisponding to tempNode
+				const unsigned long long tempID = idQueue.front();
+
+				idQueue.pop();
+
+
+				/**********************************************************************************************
+				*	check if tempNode is a leaf node calling isLeaf() and type()
+				*	
+				*	isLeaf() will return:
+				*		-	8 if the node is a leaf node
+				*		NOTE: It was also return 8 if the node is empty, which is why type() must also be called.
+				*		You could just use type() to check for leaf node, but be why not be safe.
+				*	type() will return: 
+				*		-	9-15 if it's a leaf node (each number representing one of 8 leaf nodes belonging to 
+				*			an inner node)
+				**********************************************************************************************/
+				if ((tempNode.type() > 8 && tempNode.type() < 16) && tempNode.isLeaf() > 0) {
+					// used to hold leaf number with respect to the other 8 leaves assigned to an inner node
+					size_t num;
+
+					// create bounding box objext
+					BBox3fa b;
+
+					// get bounding box for the tempNode leaf
+					b = boundsQueue.front();
+					boundsQueue.pop();
+
+					// check the geometry type for the leaf node
+					if (scene->geometries[0]->gtype == 16) {		// GTY_TRIANGLE_MESH
+						
+						// cast the tempNode leaf as the appropriate primitive type (based on the geometry type)
+						Triangle4* tri = (Triangle4*)tempNode.leaf(num);
+						//Triangle4v* tri = (Triangle4v*)tempNode.leaf(num);
+
+
+						// write leaf node info to bvh file
+						/***************	FOR TXT FILE	********************
+						bvhtxt << tempID << " 2 " << tri->size() << " " << b.lower.x << " " << b.lower.y << " " << b.lower.z << " "
+							<< b.upper.x << " " << b.upper.y << " " << b.upper.z << "\n";
+						*******************************************************/
+
+						/***************	FOR BIN FILE	********************/
+						char bvharray[10];
+
+						// write 64-bit node id
+						bvharray[7] = tempID & 0xff;
+						bvharray[6] = (tempID >> 8) & 0xff;
+						bvharray[5] = (tempID >> 16) & 0xff;
+						bvharray[4] = (tempID >> 24) & 0xff;
+						bvharray[3] = (tempID >> 32) & 0xff;
+						bvharray[2] = (tempID >> 40) & 0xff;
+						bvharray[1] = (tempID >> 48) & 0xff;
+						bvharray[0] = (tempID >> 56) & 0xff;
+
+						// write 8-bit node type (1 for inner node, 2 for leaf node)
+						bvharray[8] = 2 & 0xff;
+
+						// write 8-bit number of leaf children (number of primitives)
+						bvharray[9] = tri->size() & 0xff;
+						bvhbin.write(bvharray, 10);
+
+						// write 6 32-bit float coordinates for the leaf node
+						// NOTE: writes most significant float byte first
+						char* tempChar;
+						tempChar = (char *)&b.lower.x;
+						bvhbin.write(&tempChar[3], 1);
+						bvhbin.write(&tempChar[2], 1);
+						bvhbin.write(&tempChar[1], 1);
+						bvhbin.write(&tempChar[0], 1);
+
+						tempChar = (char *)&b.lower.y;
+						bvhbin.write(&tempChar[3], 1);
+						bvhbin.write(&tempChar[2], 1);
+						bvhbin.write(&tempChar[1], 1);
+						bvhbin.write(&tempChar[0], 1);
+
+						tempChar = (char *)&b.lower.z;
+						bvhbin.write(&tempChar[3], 1);
+						bvhbin.write(&tempChar[2], 1);
+						bvhbin.write(&tempChar[1], 1);
+						bvhbin.write(&tempChar[0], 1);
+
+						tempChar = (char *)&b.upper.x;
+						bvhbin.write(&tempChar[3], 1);
+						bvhbin.write(&tempChar[2], 1);
+						bvhbin.write(&tempChar[1], 1);
+						bvhbin.write(&tempChar[0], 1);
+
+						tempChar = (char *)&b.upper.y;
+						bvhbin.write(&tempChar[3], 1);
+						bvhbin.write(&tempChar[2], 1);
+						bvhbin.write(&tempChar[1], 1);
+						bvhbin.write(&tempChar[0], 1);
+						
+						tempChar = (char *)&b.upper.z;
+						bvhbin.write(&tempChar[3], 1);
+						bvhbin.write(&tempChar[2], 1);
+						bvhbin.write(&tempChar[1], 1);
+						bvhbin.write(&tempChar[0], 1);
+						/*******************************************************/
+
+
+						// write primitive info to primitive file
+						//for (size_t i = 0; i < num; i++) {
+						for (size_t j = 0; j < tri->size(); j++) {
+
+							/***************	FOR TXT FILE	********************
+							primtxt << tempID << " 1 " << tri->geomID(j) << " " << tri->primID(j) <<
+								" " << tri->v0.x[j] << " " << tri->v0.y[j] << " " << tri->v0.z[j] <<
+								" " << tri->v0.x[j] - tri->e1.x[j] << " " << tri->v0.y[j] - tri->e1.y[j] << " " << tri->v0.z[j] - tri->e1.z[j] <<
+								" " << tri->v0.x[j] + tri->e2.x[j] << " " << tri->v0.y[j] + tri->e2.y[j] << " " << tri->v0.z[j] + tri->e2.z[j] << std::endl;
+							*******************************************************/
+
+							/***************	FOR BIN FILE	********************/
+							char primarray[13];
+
+							// write 64-bit node id
+							primarray[3] = tempID & 0xff;
+							primarray[2] = (tempID >> 8) & 0xff;
+							primarray[1] = (tempID >> 16) & 0xff;
+							primarray[0] = (tempID >> 24) & 0xff;
+
+							// write 8-bit number of primitives in leaf node
+							primarray[4] = tri->size() & 0xff;
+
+							// write 32-bit geometry id
+							primarray[8] = tri->geomID(j) & 0xff;
+							primarray[7] = (tri->geomID(j) >> 8) & 0xff;
+							primarray[6] = (tri->geomID(j) >> 16) & 0xff;
+							primarray[5] = (tri->geomID(j) >> 24) & 0xff;
+							
+							// write 32-bit primitive id
+							primarray[12] = tri->primID(j) & 0xff;
+							primarray[11] = (tri->primID(j) >> 8) & 0xff;
+							primarray[10] = (tri->primID(j) >> 16) & 0xff;
+							primarray[9] = (tri->primID(j) >> 24) & 0xff;
+							primbin.write(primarray, 13);
+
+
+							// write 6 32-bit float coordinates for the leaf node
+							// NOTE: writes most significant float byte first
+							float tempFloat;
+							char* tempChar;
+							tempChar = (char *)&tri->v0.x[j];
+							primbin.write(&tempChar[3], 1);
+							primbin.write(&tempChar[2], 1);
+							primbin.write(&tempChar[1], 1);
+							primbin.write(&tempChar[0], 1);
+
+							tempChar = (char *)&tri->v0.y[j];
+							primbin.write(&tempChar[3], 1);
+							primbin.write(&tempChar[2], 1);
+							primbin.write(&tempChar[1], 1);
+							primbin.write(&tempChar[0], 1);
+
+							tempChar = (char *)&tri->v0.z[j];
+							primbin.write(&tempChar[3], 1);
+							primbin.write(&tempChar[2], 1);
+							primbin.write(&tempChar[1], 1);
+							primbin.write(&tempChar[0], 1);
+
+
+							tempFloat = tri->v0.x[j] - tri->e1.x[j];
+							tempChar = (char *)&tempFloat;
+							primbin.write(&tempChar[3], 1);
+							primbin.write(&tempChar[2], 1);
+							primbin.write(&tempChar[1], 1);
+							primbin.write(&tempChar[0], 1);
+
+							tempFloat = tri->v0.y[j] - tri->e1.y[j];
+							tempChar = (char *)&tempFloat;
+							primbin.write(&tempChar[3], 1);
+							primbin.write(&tempChar[2], 1);
+							primbin.write(&tempChar[1], 1);
+							primbin.write(&tempChar[0], 1);
+
+							tempFloat = tri->v0.z[j] - tri->e1.z[j];
+							tempChar = (char *)&tempFloat;
+							primbin.write(&tempChar[3], 1);
+							primbin.write(&tempChar[2], 1);
+							primbin.write(&tempChar[1], 1);
+							primbin.write(&tempChar[0], 1);
+
+							tempFloat = tri->v0.x[j] + tri->e2.x[j];
+							tempChar = (char *)&tempFloat;
+							primbin.write(&tempChar[3], 1);
+							primbin.write(&tempChar[2], 1);
+							primbin.write(&tempChar[1], 1);
+							primbin.write(&tempChar[0], 1);
+
+							tempFloat = tri->v0.y[j] + tri->e2.y[j];
+							tempChar = (char *)&tempFloat;
+							primbin.write(&tempChar[3], 1);
+							primbin.write(&tempChar[2], 1);
+							primbin.write(&tempChar[1], 1);
+							primbin.write(&tempChar[0], 1);
+
+							tempFloat = tri->v0.z[j] + tri->e2.z[j];
+							tempChar = (char *)&tempFloat;
+							primbin.write(&tempChar[3], 1);
+							primbin.write(&tempChar[2], 1);
+							primbin.write(&tempChar[1], 1);
+							primbin.write(&tempChar[0], 1);
+							/*******************************************************/
+						}
+						//}
+					}
+					// note, current code does not support other geometry types (for now)
+					else if (scene->geometries[0]->gtype == 4) {	// GTY_FLAT_BEZIER_CURVE
+						//const PrimRef& prim = (PrimRef)tempNode.leaf(num);
+						Curve4v* curve = (Curve4v*)tempNode.leaf(num);
+						BezierCurve3fa* bezCurve = (BezierCurve3fa*)tempNode.leaf(num);
+						QuadraticBezierCurve3fa* quadBezCurve = (QuadraticBezierCurve3fa*)tempNode.leaf(num);
+
+						//std::cout << "\t\t\tGeomID: " << curve->geomID(0) << ", PrimID: " << curve->primID << ", Bounds: ";
+						//prim->bounds() << "\n";
+
+						std::cout << "ERRRO: FLAT_BEZIER_CURVE GEOMETRY" << std::endl;
+					}
+					else {
+						std::cout << "ERROR: UNKNOWN GEOM TYPE" << std::endl;
+					}
+				}
+				// check if current node is an aligned node (inner node)
+				else if (tempNode.isAlignedNode()) {
+
+					// point aligned node pointer to tempNode
+					n8 = tempNode.alignedNode();
+
+					vector <float> lowerX;
+					vector <float> lowerY;
+					vector <float> lowerZ;
+					vector <float> upperX;
+					vector <float> upperY;
+					vector <float> upperZ;
+					unsigned int numChildren = 0;
+
+					// push children bounds to their respective coordinate vectors
+					for (int i = 0; i < 8; i++) {
+						// an empty child node will have infinite bounds, do not store and break loop
+						if (n8->bounds(i).lower.x == (float)pos_inf || n8->bounds(i).lower.x == (float)neg_inf) break;
+
+						lowerX.push_back(n8->bounds(i).lower.x);
+						lowerY.push_back(n8->bounds(i).lower.y);
+						lowerZ.push_back(n8->bounds(i).lower.z);
+						upperX.push_back(n8->bounds(i).upper.x);
+						upperY.push_back(n8->bounds(i).upper.y);
+						upperZ.push_back(n8->bounds(i).upper.z);
+						numChildren++;
+					}
+
+					// write inner node info to bvh file
+					/***************	FOR TXT FILE	********************
+					bvhtxt << tempID << " 1 " << numChildren << " " << *std::min_element(lowerX.begin(), lowerX.end()) << " "
+						<< *std::min_element(lowerY.begin(), lowerY.end()) << " " << *std::min_element(lowerZ.begin(), lowerZ.end()) << " "
+						<< *std::max_element(upperX.begin(), upperX.end()) << " " << *std::max_element(upperY.begin(), upperY.end()) << " "
+						<< *std::max_element(upperZ.begin(), upperZ.end()) << "\n";
+					*******************************************************/
+
+					/***************	FOR BIN FILE	********************/
+					char bvharray[10];
+
+					// write 64-bit node id
+					bvharray[7] = tempID & 0xff;
+					bvharray[6] = (tempID >> 8) & 0xff;
+					bvharray[5] = (tempID >> 16) & 0xff;
+					bvharray[4] = (tempID >> 24) & 0xff;
+					bvharray[3] = (tempID >> 32) & 0xff;
+					bvharray[2] = (tempID >> 40) & 0xff;
+					bvharray[1] = (tempID >> 48) & 0xff;
+					bvharray[0] = (tempID >> 56) & 0xff;
+
+					// write 8-bit node type (1 for inner node, 2 for leaf node)
+					bvharray[8] = 1 & 0xff;
+
+					// write 8-bit number of leaf children (number of primitives)
+					bvharray[9] = numChildren & 0xff;
+					bvhbin.write(bvharray, 10);
+
+					// write 6 32-bit float coordinates for the leaf node
+					// NOTE: writes most significant float byte first
+					float tempFloat;
+					char* tempChar;
+					tempFloat = *std::min_element(lowerX.begin(), lowerX.end());
+					tempChar = (char *)&tempFloat;
+					bvhbin.write(&tempChar[3], 1);
+					bvhbin.write(&tempChar[2], 1);
+					bvhbin.write(&tempChar[1], 1);
+					bvhbin.write(&tempChar[0], 1);
+
+					tempFloat = *std::min_element(lowerY.begin(), lowerY.end());
+					tempChar = (char *)&tempFloat;
+					bvhbin.write(&tempChar[3], 1);
+					bvhbin.write(&tempChar[2], 1);
+					bvhbin.write(&tempChar[1], 1);
+					bvhbin.write(&tempChar[0], 1);
+
+					tempFloat = *std::min_element(lowerZ.begin(), lowerZ.end());
+					tempChar = (char *)&tempFloat;
+					bvhbin.write(&tempChar[3], 1);
+					bvhbin.write(&tempChar[2], 1);
+					bvhbin.write(&tempChar[1], 1);
+					bvhbin.write(&tempChar[0], 1);
+
+					tempFloat = *std::max_element(upperX.begin(), upperX.end());
+					tempChar = (char *)&tempFloat;
+					bvhbin.write(&tempChar[3], 1);
+					bvhbin.write(&tempChar[2], 1);
+					bvhbin.write(&tempChar[1], 1);
+					bvhbin.write(&tempChar[0], 1);
+
+					tempFloat = *std::max_element(upperY.begin(), upperY.end());
+					tempChar = (char *)&tempFloat;
+					bvhbin.write(&tempChar[3], 1);
+					bvhbin.write(&tempChar[2], 1);
+					bvhbin.write(&tempChar[1], 1);
+					bvhbin.write(&tempChar[0], 1);
+
+					tempFloat = *std::max_element(upperZ.begin(), upperZ.end());
+					tempChar = (char *)&tempFloat;
+					bvhbin.write(&tempChar[3], 1);
+					bvhbin.write(&tempChar[2], 1);
+					bvhbin.write(&tempChar[1], 1);
+					bvhbin.write(&tempChar[0], 1);
+					/*******************************************************/
+
+					// push inner node's children to node queue, as well as their node id to the id queue
+					for (int i = 0; i < 8; i++) {
+						if (n8->child(i) == 8) break;
+						nodeQueue8.push(n8->child(i));
+
+						/////////////////////////////////////////////////////////////////////////////// CHANGE THIS BACK TO tempID * 8 when doing 8-way BVH
+						idQueue.push(tempID * 4 + (i + 1));
+
+						// push leaf node bounds onto queue to access when current node is a leaf node
+						if ((n8->child(i).type() > 8 && n8->child(i).type() < 16) && n8->child(i).isLeaf() > 0) {	// valid leaf node
+							boundsQueue.push(n8->bounds(i));
+						}
+					}
+				}
+				// empty node, do not process
+				else if (tempNode.type() == 8) {
+					//std::cout << "\tEMPTY NODE" << "\n";
+				}
+				// unknown node type (could be one of the other nodes defined in bvh.h)
+				else {
+					std::cout << "ERROR: UNKNOWN NODE TYPE " << tempNode.type() << "\n";
+				}
+			}
+		}
+
+		// unknown bvh structure (could be 2-level bvh instance)
+		else {
+			std::cout << "UNKNOWN BVH STRUCTURE" << std::endl;
+		}
+	}
+	else {
+		std::cout << "ERROR: UNABLE TO OPEN TEXT FILE";
+	}
+	bvhbin.close();
+	primbin.close();
+	//bvhtxt.close();
+	//primtxt.close();
+	/***********************************************************************************/
+
     RTC_CATCH_END2(scene);
   }
 

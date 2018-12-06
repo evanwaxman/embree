@@ -21,7 +21,34 @@
 #include "../common/tutorial/scene_device.h"
 #include "../common/tutorial/optics.h"
 
+/***MY INCLUDES***/
+#include <iostream>
+#include <fstream>
+//#include <chrono>
+/*****************/
+
 namespace embree {
+
+/***MY GLOBAL VARIABLES***/
+std::ofstream primaryRayBin;
+std::ofstream bounce1RayBin;
+std::ofstream bounce2RayBin;
+std::ofstream bounce3RayBin;
+std::ofstream bounce4RayBin;
+std::ofstream bounce5RayBin;
+std::ofstream bounce6RayBin;
+std::ofstream bounce7RayBin;
+std::ofstream primaryIntersectionBin;
+std::ofstream bounce1IntersectionBin;
+std::ofstream bounce2IntersectionBin;
+std::ofstream bounce3IntersectionBin;
+std::ofstream bounce4IntersectionBin;
+std::ofstream bounce5IntersectionBin;
+std::ofstream bounce6IntersectionBin;
+std::ofstream bounce7IntersectionBin;
+unsigned int myRayID = 0;
+//std::chrono::duration<double> intersectTime = std::chrono::duration < double>(0.0);
+/*************************/
 
 #undef TILE_SIZE_X
 #undef TILE_SIZE_Y
@@ -1596,6 +1623,13 @@ Vec3fa renderPixelFunction(float x, float y, RandomSampler& sampler, const ISPCC
                      Vec3fa(normalize(x*camera.xfm.l.vx + y*camera.xfm.l.vy + camera.xfm.l.vz)),0.0f,inf,time);
 
   DifferentialGeometry dg;
+
+
+  /**************MY EDITS*****************/
+  char intersectarray[4];
+  char* tempChar;
+  char rayarray[4];
+  /***************************************/
  
   /* iterative path tracer loop */
   for (int i=0; i<g_max_path_length; i++)
@@ -1608,7 +1642,639 @@ Vec3fa renderPixelFunction(float x, float y, RandomSampler& sampler, const ISPCC
     IntersectContext context;
     InitIntersectionContext(&context);
     context.context.flags = (i == 0) ? g_iflags_coherent : g_iflags_incoherent;
+
+
+
+	/***************************************MY EDITS**************************************/
+
+	/***WRITE RAYS TO BIN FILES HERE***/
+	ray.id = myRayID;
+
+	if (i == 0) {
+		// write 32-bit ray id
+		rayarray[3] = ray.id & 0xff;
+		rayarray[2] = (ray.id >> 8) & 0xff;
+		rayarray[1] = (ray.id >> 16) & 0xff;
+		rayarray[0] = (ray.id >> 24) & 0xff;
+		primaryRayBin.write(rayarray, 4);
+
+		// write 3 32-bit float origin coordinates
+		// NOTE: writes most significant float byte first
+		tempChar = (char *)&ray.org.x;
+		primaryRayBin.write(&tempChar[3], 1);
+		primaryRayBin.write(&tempChar[2], 1);
+		primaryRayBin.write(&tempChar[1], 1);
+		primaryRayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.org.y;
+		primaryRayBin.write(&tempChar[3], 1);
+		primaryRayBin.write(&tempChar[2], 1);
+		primaryRayBin.write(&tempChar[1], 1);
+		primaryRayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.org.z;
+		primaryRayBin.write(&tempChar[3], 1);
+		primaryRayBin.write(&tempChar[2], 1);
+		primaryRayBin.write(&tempChar[1], 1);
+		primaryRayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.dir.x;
+		primaryRayBin.write(&tempChar[3], 1);
+		primaryRayBin.write(&tempChar[2], 1);
+		primaryRayBin.write(&tempChar[1], 1);
+		primaryRayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.dir.y;
+		primaryRayBin.write(&tempChar[3], 1);
+		primaryRayBin.write(&tempChar[2], 1);
+		primaryRayBin.write(&tempChar[1], 1);
+		primaryRayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.dir.z;
+		primaryRayBin.write(&tempChar[3], 1);
+		primaryRayBin.write(&tempChar[2], 1);
+		primaryRayBin.write(&tempChar[1], 1);
+		primaryRayBin.write(&tempChar[0], 1);
+	}
+	else if (i == 1) {
+		// write 32-bit ray id
+		rayarray[3] = ray.id & 0xff;
+		rayarray[2] = (ray.id >> 8) & 0xff;
+		rayarray[1] = (ray.id >> 16) & 0xff;
+		rayarray[0] = (ray.id >> 24) & 0xff;
+		bounce1RayBin.write(rayarray, 4);
+
+		// write 3 32-bit float origin coordinates
+		// NOTE: writes most significant float byte first
+		tempChar = (char *)&ray.org.x;
+		bounce1RayBin.write(&tempChar[3], 1);
+		bounce1RayBin.write(&tempChar[2], 1);
+		bounce1RayBin.write(&tempChar[1], 1);
+		bounce1RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.org.y;
+		bounce1RayBin.write(&tempChar[3], 1);
+		bounce1RayBin.write(&tempChar[2], 1);
+		bounce1RayBin.write(&tempChar[1], 1);
+		bounce1RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.org.z;
+		bounce1RayBin.write(&tempChar[3], 1);
+		bounce1RayBin.write(&tempChar[2], 1);
+		bounce1RayBin.write(&tempChar[1], 1);
+		bounce1RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.dir.x;
+		bounce1RayBin.write(&tempChar[3], 1);
+		bounce1RayBin.write(&tempChar[2], 1);
+		bounce1RayBin.write(&tempChar[1], 1);
+		bounce1RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.dir.y;
+		bounce1RayBin.write(&tempChar[3], 1);
+		bounce1RayBin.write(&tempChar[2], 1);
+		bounce1RayBin.write(&tempChar[1], 1);
+		bounce1RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.dir.z;
+		bounce1RayBin.write(&tempChar[3], 1);
+		bounce1RayBin.write(&tempChar[2], 1);
+		bounce1RayBin.write(&tempChar[1], 1);
+		bounce1RayBin.write(&tempChar[0], 1);
+	}
+	else if (i == 2) {
+		// write 32-bit ray id
+		rayarray[3] = ray.id & 0xff;
+		rayarray[2] = (ray.id >> 8) & 0xff;
+		rayarray[1] = (ray.id >> 16) & 0xff;
+		rayarray[0] = (ray.id >> 24) & 0xff;
+		bounce2RayBin.write(rayarray, 4);
+
+		// write 3 32-bit float origin coordinates
+		// NOTE: writes most significant float byte first
+		tempChar = (char *)&ray.org.x;
+		bounce2RayBin.write(&tempChar[3], 1);
+		bounce2RayBin.write(&tempChar[2], 1);
+		bounce2RayBin.write(&tempChar[1], 1);
+		bounce2RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.org.y;
+		bounce2RayBin.write(&tempChar[3], 1);
+		bounce2RayBin.write(&tempChar[2], 1);
+		bounce2RayBin.write(&tempChar[1], 1);
+		bounce2RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.org.z;
+		bounce2RayBin.write(&tempChar[3], 1);
+		bounce2RayBin.write(&tempChar[2], 1);
+		bounce2RayBin.write(&tempChar[1], 1);
+		bounce2RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.dir.x;
+		bounce2RayBin.write(&tempChar[3], 1);
+		bounce2RayBin.write(&tempChar[2], 1);
+		bounce2RayBin.write(&tempChar[1], 1);
+		bounce2RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.dir.y;
+		bounce2RayBin.write(&tempChar[3], 1);
+		bounce2RayBin.write(&tempChar[2], 1);
+		bounce2RayBin.write(&tempChar[1], 1);
+		bounce2RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.dir.z;
+		bounce2RayBin.write(&tempChar[3], 1);
+		bounce2RayBin.write(&tempChar[2], 1);
+		bounce2RayBin.write(&tempChar[1], 1);
+		bounce2RayBin.write(&tempChar[0], 1);
+	}
+	else if (i == 3) {
+		// write 32-bit ray id
+		rayarray[3] = ray.id & 0xff;
+		rayarray[2] = (ray.id >> 8) & 0xff;
+		rayarray[1] = (ray.id >> 16) & 0xff;
+		rayarray[0] = (ray.id >> 24) & 0xff;
+		bounce3RayBin.write(rayarray, 4);
+
+		// write 3 32-bit float origin coordinates
+		// NOTE: writes most significant float byte first
+		tempChar = (char *)&ray.org.x;
+		bounce3RayBin.write(&tempChar[3], 1);
+		bounce3RayBin.write(&tempChar[2], 1);
+		bounce3RayBin.write(&tempChar[1], 1);
+		bounce3RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.org.y;
+		bounce3RayBin.write(&tempChar[3], 1);
+		bounce3RayBin.write(&tempChar[2], 1);
+		bounce3RayBin.write(&tempChar[1], 1);
+		bounce3RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.org.z;
+		bounce3RayBin.write(&tempChar[3], 1);
+		bounce3RayBin.write(&tempChar[2], 1);
+		bounce3RayBin.write(&tempChar[1], 1);
+		bounce3RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.dir.x;
+		bounce3RayBin.write(&tempChar[3], 1);
+		bounce3RayBin.write(&tempChar[2], 1);
+		bounce3RayBin.write(&tempChar[1], 1);
+		bounce3RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.dir.y;
+		bounce3RayBin.write(&tempChar[3], 1);
+		bounce3RayBin.write(&tempChar[2], 1);
+		bounce3RayBin.write(&tempChar[1], 1);
+		bounce3RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.dir.z;
+		bounce3RayBin.write(&tempChar[3], 1);
+		bounce3RayBin.write(&tempChar[2], 1);
+		bounce3RayBin.write(&tempChar[1], 1);
+		bounce3RayBin.write(&tempChar[0], 1);
+	}
+	else if (i == 4) {
+		// write 32-bit ray id
+		rayarray[3] = ray.id & 0xff;
+		rayarray[2] = (ray.id >> 8) & 0xff;
+		rayarray[1] = (ray.id >> 16) & 0xff;
+		rayarray[0] = (ray.id >> 24) & 0xff;
+		bounce4RayBin.write(rayarray, 4);
+
+		// write 3 32-bit float origin coordinates
+		// NOTE: writes most significant float byte first
+		tempChar = (char *)&ray.org.x;
+		bounce4RayBin.write(&tempChar[3], 1);
+		bounce4RayBin.write(&tempChar[2], 1);
+		bounce4RayBin.write(&tempChar[1], 1);
+		bounce4RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.org.y;
+		bounce4RayBin.write(&tempChar[3], 1);
+		bounce4RayBin.write(&tempChar[2], 1);
+		bounce4RayBin.write(&tempChar[1], 1);
+		bounce4RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.org.z;
+		bounce4RayBin.write(&tempChar[3], 1);
+		bounce4RayBin.write(&tempChar[2], 1);
+		bounce4RayBin.write(&tempChar[1], 1);
+		bounce4RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.dir.x;
+		bounce4RayBin.write(&tempChar[3], 1);
+		bounce4RayBin.write(&tempChar[2], 1);
+		bounce4RayBin.write(&tempChar[1], 1);
+		bounce4RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.dir.y;
+		bounce4RayBin.write(&tempChar[3], 1);
+		bounce4RayBin.write(&tempChar[2], 1);
+		bounce4RayBin.write(&tempChar[1], 1);
+		bounce4RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.dir.z;
+		bounce4RayBin.write(&tempChar[3], 1);
+		bounce4RayBin.write(&tempChar[2], 1);
+		bounce4RayBin.write(&tempChar[1], 1);
+		bounce4RayBin.write(&tempChar[0], 1);
+	}
+	else if (i == 5) {
+		// write 32-bit ray id
+		rayarray[3] = ray.id & 0xff;
+		rayarray[2] = (ray.id >> 8) & 0xff;
+		rayarray[1] = (ray.id >> 16) & 0xff;
+		rayarray[0] = (ray.id >> 24) & 0xff;
+		bounce5RayBin.write(rayarray, 4);
+
+		// write 3 32-bit float origin coordinates
+		// NOTE: writes most significant float byte first
+		tempChar = (char *)&ray.org.x;
+		bounce5RayBin.write(&tempChar[3], 1);
+		bounce5RayBin.write(&tempChar[2], 1);
+		bounce5RayBin.write(&tempChar[1], 1);
+		bounce5RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.org.y;
+		bounce5RayBin.write(&tempChar[3], 1);
+		bounce5RayBin.write(&tempChar[2], 1);
+		bounce5RayBin.write(&tempChar[1], 1);
+		bounce5RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.org.z;
+		bounce5RayBin.write(&tempChar[3], 1);
+		bounce5RayBin.write(&tempChar[2], 1);
+		bounce5RayBin.write(&tempChar[1], 1);
+		bounce5RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.dir.x;
+		bounce5RayBin.write(&tempChar[3], 1);
+		bounce5RayBin.write(&tempChar[2], 1);
+		bounce5RayBin.write(&tempChar[1], 1);
+		bounce5RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.dir.y;
+		bounce5RayBin.write(&tempChar[3], 1);
+		bounce5RayBin.write(&tempChar[2], 1);
+		bounce5RayBin.write(&tempChar[1], 1);
+		bounce5RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.dir.z;
+		bounce5RayBin.write(&tempChar[3], 1);
+		bounce5RayBin.write(&tempChar[2], 1);
+		bounce5RayBin.write(&tempChar[1], 1);
+		bounce5RayBin.write(&tempChar[0], 1);
+	}
+	else if (i == 6) {
+		// write 32-bit ray id
+		rayarray[3] = ray.id & 0xff;
+		rayarray[2] = (ray.id >> 8) & 0xff;
+		rayarray[1] = (ray.id >> 16) & 0xff;
+		rayarray[0] = (ray.id >> 24) & 0xff;
+		bounce6RayBin.write(rayarray, 4);
+
+		// write 3 32-bit float origin coordinates
+		// NOTE: writes most significant float byte first
+		tempChar = (char *)&ray.org.x;
+		bounce6RayBin.write(&tempChar[3], 1);
+		bounce6RayBin.write(&tempChar[2], 1);
+		bounce6RayBin.write(&tempChar[1], 1);
+		bounce6RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.org.y;
+		bounce6RayBin.write(&tempChar[3], 1);
+		bounce6RayBin.write(&tempChar[2], 1);
+		bounce6RayBin.write(&tempChar[1], 1);
+		bounce6RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.org.z;
+		bounce6RayBin.write(&tempChar[3], 1);
+		bounce6RayBin.write(&tempChar[2], 1);
+		bounce6RayBin.write(&tempChar[1], 1);
+		bounce6RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.dir.x;
+		bounce6RayBin.write(&tempChar[3], 1);
+		bounce6RayBin.write(&tempChar[2], 1);
+		bounce6RayBin.write(&tempChar[1], 1);
+		bounce6RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.dir.y;
+		bounce6RayBin.write(&tempChar[3], 1);
+		bounce6RayBin.write(&tempChar[2], 1);
+		bounce6RayBin.write(&tempChar[1], 1);
+		bounce6RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.dir.z;
+		bounce6RayBin.write(&tempChar[3], 1);
+		bounce6RayBin.write(&tempChar[2], 1);
+		bounce6RayBin.write(&tempChar[1], 1);
+		bounce6RayBin.write(&tempChar[0], 1);
+	}
+	else if (i == 7) {
+		// write 32-bit ray id
+		rayarray[3] = ray.id & 0xff;
+		rayarray[2] = (ray.id >> 8) & 0xff;
+		rayarray[1] = (ray.id >> 16) & 0xff;
+		rayarray[0] = (ray.id >> 24) & 0xff;
+		bounce7RayBin.write(rayarray, 4);
+
+		// write 3 32-bit float origin coordinates
+		// NOTE: writes most significant float byte first
+		tempChar = (char *)&ray.org.x;
+		bounce7RayBin.write(&tempChar[3], 1);
+		bounce7RayBin.write(&tempChar[2], 1);
+		bounce7RayBin.write(&tempChar[1], 1);
+		bounce7RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.org.y;
+		bounce7RayBin.write(&tempChar[3], 1);
+		bounce7RayBin.write(&tempChar[2], 1);
+		bounce7RayBin.write(&tempChar[1], 1);
+		bounce7RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.org.z;
+		bounce7RayBin.write(&tempChar[3], 1);
+		bounce7RayBin.write(&tempChar[2], 1);
+		bounce7RayBin.write(&tempChar[1], 1);
+		bounce7RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.dir.x;
+		bounce7RayBin.write(&tempChar[3], 1);
+		bounce7RayBin.write(&tempChar[2], 1);
+		bounce7RayBin.write(&tempChar[1], 1);
+		bounce7RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.dir.y;
+		bounce7RayBin.write(&tempChar[3], 1);
+		bounce7RayBin.write(&tempChar[2], 1);
+		bounce7RayBin.write(&tempChar[1], 1);
+		bounce7RayBin.write(&tempChar[0], 1);
+
+		tempChar = (char *)&ray.dir.z;
+		bounce7RayBin.write(&tempChar[3], 1);
+		bounce7RayBin.write(&tempChar[2], 1);
+		bounce7RayBin.write(&tempChar[1], 1);
+		bounce7RayBin.write(&tempChar[0], 1);
+	}
+
+	//std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+
+	// intersect ray with scene
     rtcIntersect1(g_scene,&context.context,RTCRayHit_(ray));
+
+	/***WRITE INTERSECTIONS TO BIN FILES HERE***/
+	if (i == 0) {
+		// write 32-bit ray id
+		intersectarray[3] = ray.id & 0xff;
+		intersectarray[2] = (ray.id >> 8) & 0xff;
+		intersectarray[1] = (ray.id >> 16) & 0xff;
+		intersectarray[0] = (ray.id >> 24) & 0xff;
+		primaryIntersectionBin.write(intersectarray, 4);
+
+		// write 32-bit geometry id
+		intersectarray[3] = ray.geomID & 0xff;
+		intersectarray[2] = (ray.geomID >> 8) & 0xff;
+		intersectarray[1] = (ray.geomID >> 16) & 0xff;
+		intersectarray[0] = (ray.geomID >> 24) & 0xff;
+		primaryIntersectionBin.write(intersectarray, 4);
+
+		// write 32-bit primitive id
+		intersectarray[3] = ray.primID & 0xff;
+		intersectarray[2] = (ray.primID >> 8) & 0xff;
+		intersectarray[1] = (ray.primID >> 16) & 0xff;
+		intersectarray[0] = (ray.primID >> 24) & 0xff;
+		primaryIntersectionBin.write(intersectarray, 4);
+
+		// write 32-bit float t_max value
+		// NOTE: writes most significant float byte first
+		tempChar = (char *)&ray.tfar;
+		primaryIntersectionBin.write(&tempChar[3], 1);
+		primaryIntersectionBin.write(&tempChar[2], 1);
+		primaryIntersectionBin.write(&tempChar[1], 1);
+		primaryIntersectionBin.write(&tempChar[0], 1);
+	}
+	else if (i == 1) {
+		// write 32-bit ray id
+		intersectarray[3] = ray.id & 0xff;
+		intersectarray[2] = (ray.id >> 8) & 0xff;
+		intersectarray[1] = (ray.id >> 16) & 0xff;
+		intersectarray[0] = (ray.id >> 24) & 0xff;
+		bounce1IntersectionBin.write(intersectarray, 4);
+
+		// write 32-bit geometry id
+		intersectarray[3] = ray.geomID & 0xff;
+		intersectarray[2] = (ray.geomID >> 8) & 0xff;
+		intersectarray[1] = (ray.geomID >> 16) & 0xff;
+		intersectarray[0] = (ray.geomID >> 24) & 0xff;
+		bounce1IntersectionBin.write(intersectarray, 4);
+
+		// write 32-bit primitive id
+		intersectarray[3] = ray.primID & 0xff;
+		intersectarray[2] = (ray.primID >> 8) & 0xff;
+		intersectarray[1] = (ray.primID >> 16) & 0xff;
+		intersectarray[0] = (ray.primID >> 24) & 0xff;
+		bounce1IntersectionBin.write(intersectarray, 4);
+
+		// write 32-bit float t_max value
+		// NOTE: writes most significant float byte first
+		tempChar = (char *)&ray.tfar;
+		bounce1IntersectionBin.write(&tempChar[3], 1);
+		bounce1IntersectionBin.write(&tempChar[2], 1);
+		bounce1IntersectionBin.write(&tempChar[1], 1);
+		bounce1IntersectionBin.write(&tempChar[0], 1);
+	}
+	else if (i == 2) {
+		// write 32-bit ray id
+		intersectarray[3] = ray.id & 0xff;
+		intersectarray[2] = (ray.id >> 8) & 0xff;
+		intersectarray[1] = (ray.id >> 16) & 0xff;
+		intersectarray[0] = (ray.id >> 24) & 0xff;
+		bounce2IntersectionBin.write(intersectarray, 4);
+
+		// write 32-bit geometry id
+		intersectarray[3] = ray.geomID & 0xff;
+		intersectarray[2] = (ray.geomID >> 8) & 0xff;
+		intersectarray[1] = (ray.geomID >> 16) & 0xff;
+		intersectarray[0] = (ray.geomID >> 24) & 0xff;
+		bounce2IntersectionBin.write(intersectarray, 4);
+
+		// write 32-bit primitive id
+		intersectarray[3] = ray.primID & 0xff;
+		intersectarray[2] = (ray.primID >> 8) & 0xff;
+		intersectarray[1] = (ray.primID >> 16) & 0xff;
+		intersectarray[0] = (ray.primID >> 24) & 0xff;
+		bounce2IntersectionBin.write(intersectarray, 4);
+
+		// write 32-bit float t_max value
+		// NOTE: writes most significant float byte first
+		tempChar = (char *)&ray.tfar;
+		bounce2IntersectionBin.write(&tempChar[3], 1);
+		bounce2IntersectionBin.write(&tempChar[2], 1);
+		bounce2IntersectionBin.write(&tempChar[1], 1);
+		bounce2IntersectionBin.write(&tempChar[0], 1);
+	}
+	else if (i == 3) {
+		// write 32-bit ray id
+		intersectarray[3] = ray.id & 0xff;
+		intersectarray[2] = (ray.id >> 8) & 0xff;
+		intersectarray[1] = (ray.id >> 16) & 0xff;
+		intersectarray[0] = (ray.id >> 24) & 0xff;
+		bounce3IntersectionBin.write(intersectarray, 4);
+
+		// write 32-bit geometry id
+		intersectarray[3] = ray.geomID & 0xff;
+		intersectarray[2] = (ray.geomID >> 8) & 0xff;
+		intersectarray[1] = (ray.geomID >> 16) & 0xff;
+		intersectarray[0] = (ray.geomID >> 24) & 0xff;
+		bounce3IntersectionBin.write(intersectarray, 4);
+
+		// write 32-bit primitive id
+		intersectarray[3] = ray.primID & 0xff;
+		intersectarray[2] = (ray.primID >> 8) & 0xff;
+		intersectarray[1] = (ray.primID >> 16) & 0xff;
+		intersectarray[0] = (ray.primID >> 24) & 0xff;
+		bounce3IntersectionBin.write(intersectarray, 4);
+
+		// write 32-bit float t_max value
+		// NOTE: writes most significant float byte first
+		tempChar = (char *)&ray.tfar;
+		bounce3IntersectionBin.write(&tempChar[3], 1);
+		bounce3IntersectionBin.write(&tempChar[2], 1);
+		bounce3IntersectionBin.write(&tempChar[1], 1);
+		bounce3IntersectionBin.write(&tempChar[0], 1);
+	}
+	else if (i == 4) {
+		// write 32-bit ray id
+		intersectarray[3] = ray.id & 0xff;
+		intersectarray[2] = (ray.id >> 8) & 0xff;
+		intersectarray[1] = (ray.id >> 16) & 0xff;
+		intersectarray[0] = (ray.id >> 24) & 0xff;
+		bounce4IntersectionBin.write(intersectarray, 4);
+
+		// write 32-bit geometry id
+		intersectarray[3] = ray.geomID & 0xff;
+		intersectarray[2] = (ray.geomID >> 8) & 0xff;
+		intersectarray[1] = (ray.geomID >> 16) & 0xff;
+		intersectarray[0] = (ray.geomID >> 24) & 0xff;
+		bounce4IntersectionBin.write(intersectarray, 4);
+
+		// write 32-bit primitive id
+		intersectarray[3] = ray.primID & 0xff;
+		intersectarray[2] = (ray.primID >> 8) & 0xff;
+		intersectarray[1] = (ray.primID >> 16) & 0xff;
+		intersectarray[0] = (ray.primID >> 24) & 0xff;
+		bounce4IntersectionBin.write(intersectarray, 4);
+
+		// write 32-bit float t_max value
+		// NOTE: writes most significant float byte first
+		tempChar = (char *)&ray.tfar;
+		bounce4IntersectionBin.write(&tempChar[3], 1);
+		bounce4IntersectionBin.write(&tempChar[2], 1);
+		bounce4IntersectionBin.write(&tempChar[1], 1);
+		bounce4IntersectionBin.write(&tempChar[0], 1);
+	}
+	else if (i == 5) {
+		// write 32-bit ray id
+		intersectarray[3] = ray.id & 0xff;
+		intersectarray[2] = (ray.id >> 8) & 0xff;
+		intersectarray[1] = (ray.id >> 16) & 0xff;
+		intersectarray[0] = (ray.id >> 24) & 0xff;
+		bounce5IntersectionBin.write(intersectarray, 4);
+
+		// write 32-bit geometry id
+		intersectarray[3] = ray.geomID & 0xff;
+		intersectarray[2] = (ray.geomID >> 8) & 0xff;
+		intersectarray[1] = (ray.geomID >> 16) & 0xff;
+		intersectarray[0] = (ray.geomID >> 24) & 0xff;
+		bounce5IntersectionBin.write(intersectarray, 4);
+
+		// write 32-bit primitive id
+		intersectarray[3] = ray.primID & 0xff;
+		intersectarray[2] = (ray.primID >> 8) & 0xff;
+		intersectarray[1] = (ray.primID >> 16) & 0xff;
+		intersectarray[0] = (ray.primID >> 24) & 0xff;
+		bounce5IntersectionBin.write(intersectarray, 4);
+
+		// write 32-bit float t_max value
+		// NOTE: writes most significant float byte first
+		tempChar = (char *)&ray.tfar;
+		bounce5IntersectionBin.write(&tempChar[3], 1);
+		bounce5IntersectionBin.write(&tempChar[2], 1);
+		bounce5IntersectionBin.write(&tempChar[1], 1);
+		bounce5IntersectionBin.write(&tempChar[0], 1);
+	}
+	else if (i == 6) {
+		// write 32-bit ray id
+		intersectarray[3] = ray.id & 0xff;
+		intersectarray[2] = (ray.id >> 8) & 0xff;
+		intersectarray[1] = (ray.id >> 16) & 0xff;
+		intersectarray[0] = (ray.id >> 24) & 0xff;
+		bounce6IntersectionBin.write(intersectarray, 4);
+
+		// write 32-bit geometry id
+		intersectarray[3] = ray.geomID & 0xff;
+		intersectarray[2] = (ray.geomID >> 8) & 0xff;
+		intersectarray[1] = (ray.geomID >> 16) & 0xff;
+		intersectarray[0] = (ray.geomID >> 24) & 0xff;
+		bounce6IntersectionBin.write(intersectarray, 4);
+
+		// write 32-bit primitive id
+		intersectarray[3] = ray.primID & 0xff;
+		intersectarray[2] = (ray.primID >> 8) & 0xff;
+		intersectarray[1] = (ray.primID >> 16) & 0xff;
+		intersectarray[0] = (ray.primID >> 24) & 0xff;
+		bounce6IntersectionBin.write(intersectarray, 4);
+
+		// write 32-bit float t_max value
+		// NOTE: writes most significant float byte first
+		tempChar = (char *)&ray.tfar;
+		bounce6IntersectionBin.write(&tempChar[3], 1);
+		bounce6IntersectionBin.write(&tempChar[2], 1);
+		bounce6IntersectionBin.write(&tempChar[1], 1);
+		bounce6IntersectionBin.write(&tempChar[0], 1);
+	}
+	else if (i == 7) {
+		// write 32-bit ray id
+		intersectarray[3] = ray.id & 0xff;
+		intersectarray[2] = (ray.id >> 8) & 0xff;
+		intersectarray[1] = (ray.id >> 16) & 0xff;
+		intersectarray[0] = (ray.id >> 24) & 0xff;
+		bounce7IntersectionBin.write(intersectarray, 4);
+
+		// write 32-bit geometry id
+		intersectarray[3] = ray.geomID & 0xff;
+		intersectarray[2] = (ray.geomID >> 8) & 0xff;
+		intersectarray[1] = (ray.geomID >> 16) & 0xff;
+		intersectarray[0] = (ray.geomID >> 24) & 0xff;
+		bounce7IntersectionBin.write(intersectarray, 4);
+
+		// write 32-bit primitive id
+		intersectarray[3] = ray.primID & 0xff;
+		intersectarray[2] = (ray.primID >> 8) & 0xff;
+		intersectarray[1] = (ray.primID >> 16) & 0xff;
+		intersectarray[0] = (ray.primID >> 24) & 0xff;
+		bounce7IntersectionBin.write(intersectarray, 4);
+
+		// write 32-bit float t_max value
+		// NOTE: writes most significant float byte first
+		tempChar = (char *)&ray.tfar;
+		bounce7IntersectionBin.write(&tempChar[3], 1);
+		bounce7IntersectionBin.write(&tempChar[2], 1);
+		bounce7IntersectionBin.write(&tempChar[1], 1);
+		bounce7IntersectionBin.write(&tempChar[0], 1);
+	}
+
+
+	//std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+
+	//intersectTime =  std::chrono::duration_cast<std::chrono::duration<double>>(intersectTime + (end - start));
+	//std::cout << "INTERSECT TIME = " << intersectTime.count() << "seconds." << std::endl;
+	/************************************************************************************************************/
+
+
+
     RayStats_addRay(stats);
     const Vec3fa wo = neg(ray.dir);
 
@@ -1683,6 +2349,11 @@ Vec3fa renderPixelFunction(float x, float y, RandomSampler& sampler, const ISPCC
     float sign = dot(wi1.v,dg.Ng) < 0.0f ? -1.0f : 1.0f;
     dg.P = dg.P + sign*dg.eps*dg.Ng;
     init_Ray(ray, dg.P,normalize(wi1.v),dg.eps,inf,time);
+
+
+	/*****************MY EDITS******************/
+	++myRayID;
+	/*******************************************/
   }
   return L;
 }
@@ -1704,6 +2375,8 @@ Vec3fa renderPixelStandard(float x, float y, const ISPCCamera& camera, RayStats&
     L = L + renderPixelFunction(fx,fy,sampler,camera,stats);
   }
   L = L/(float)g_spp;
+
+
   return L;
 }
 
@@ -1877,11 +2550,60 @@ extern "C" void device_render (int* pixels,
   /* render image */
   const int numTilesX = (width +TILE_SIZE_X-1)/TILE_SIZE_X;
   const int numTilesY = (height+TILE_SIZE_Y-1)/TILE_SIZE_Y;
-  parallel_for(size_t(0),size_t(numTilesX*numTilesY),[&](const range<size_t>& range) {
+
+  /***MY EDIT***/
+  std::cout << "FRAME START" << std::endl;
+
+  // open raybin file, where new data is appended to the end of file
+  primaryRayBin.open("C:/Users/evanwaxman/Documents/workspace/embree/primaryRay.bin", std::ios::out | std::ios::binary);
+  bounce1RayBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce1Ray.bin", std::ios::out | std::ios::binary);
+  bounce2RayBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce2Ray.bin", std::ios::out | std::ios::binary);
+  bounce3RayBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce3Ray.bin", std::ios::out | std::ios::binary);
+  bounce4RayBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce4Ray.bin", std::ios::out | std::ios::binary);
+  bounce5RayBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce5Ray.bin", std::ios::out | std::ios::binary);
+  bounce6RayBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce6Ray.bin", std::ios::out | std::ios::binary);
+  bounce7RayBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce7Ray.bin", std::ios::out | std::ios::binary);
+  primaryIntersectionBin.open("C:/Users/evanwaxman/Documents/workspace/embree/primaryIntersection.bin", std::ios::out | std::ios::binary);
+  bounce1IntersectionBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce1Intersection.bin", std::ios::out | std::ios::binary);
+  bounce2IntersectionBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce2Intersection.bin", std::ios::out | std::ios::binary);
+  bounce3IntersectionBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce3Intersection.bin", std::ios::out | std::ios::binary);
+  bounce4IntersectionBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce4Intersection.bin", std::ios::out | std::ios::binary);
+  bounce5IntersectionBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce5Intersection.bin", std::ios::out | std::ios::binary);
+  bounce6IntersectionBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce6Intersection.bin", std::ios::out | std::ios::binary);
+  bounce7IntersectionBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce7Intersection.bin", std::ios::out | std::ios::binary);
+
+  for (size_t i = 0; i < (numTilesX*numTilesX); i++) {
+	  renderTileTask((int)i, 0, pixels, width, height, time, camera, numTilesX, numTilesY);
+  }
+
+  primaryRayBin.close();
+  bounce1RayBin.close();
+  bounce2RayBin.close();
+  bounce3RayBin.close();
+  bounce4RayBin.close();
+  bounce5RayBin.close();
+  bounce6RayBin.close();
+  bounce7RayBin.close();
+  primaryIntersectionBin.close();
+  bounce1IntersectionBin.close();
+  bounce2IntersectionBin.close();
+  bounce3IntersectionBin.close();
+  bounce4IntersectionBin.close();
+  bounce5IntersectionBin.close();
+  bounce6IntersectionBin.close();
+  bounce7IntersectionBin.close();
+
+  std::cout << "FRAME END" << std::endl;
+  //std::cout << "INTERSECT TIME = " << intersectTime.count() << "seconds.";
+  /*************/
+  
+
+
+  /*parallel_for(size_t(0),size_t(numTilesX*numTilesY),[&](const range<size_t>& range) {
     const int threadIndex = (int)TaskScheduler::threadIndex();
     for (size_t i=range.begin(); i<range.end(); i++)
       renderTileTask((int)i,threadIndex,pixels,width,height,time,camera,numTilesX,numTilesY);
-  }); 
+  });*/
   //rtcDebug();
 } // device_render
 
