@@ -36,6 +36,14 @@
 #include "../geometry/subgrid_mb_intersector.h"
 #include "../geometry/curve_intersector_virtual.h"
 
+
+/**********MY EDITS**********/
+#include <iostream>
+#include <fstream>
+
+//#define GEN_FILES
+/****************************/
+
 namespace embree
 {
   namespace isa
@@ -45,6 +53,16 @@ namespace embree
                                                                               RayHit& __restrict__ ray,
                                                                               IntersectContext* __restrict__ context)
     {
+	  /**********MY EDITS**********/
+	  int nodeCount = 0;
+	  int rtiTestCount = 0;
+	  int hit = 0;
+
+#ifdef GEN_FILES
+	  std::ofstream rayData;
+#endif // GEN_FILES
+	  /****************************/
+
       /* perform per ray precalculations required by the primitive intersector */
       const BVH* __restrict__ bvh = (const BVH*)This->ptr;
       Precalculations pre(ray, bvh);
@@ -96,6 +114,13 @@ namespace embree
           size_t mask; vfloat<Nx> tNear;
           STAT3(normal.trav_nodes,1,1,1);
           bool nodeIntersected = BVHNNodeIntersector1<N, Nx, types, robust>::intersect(cur, tray, ray.time(), tNear, mask);
+
+
+		  /**********MY EDITS**********/
+		  ++nodeCount;
+		  /****************************/
+
+
           if (unlikely(!nodeIntersected)) { STAT3(normal.trav_nodes,-1,-1,-1); break; }
 
           /* if no child is hit, pop next node */
@@ -114,6 +139,13 @@ namespace embree
         PrimitiveIntersector1::intersect(This, pre, ray, context, prim, num, tray, lazy_node);
         tray.tfar = ray.tfar;
 
+		/**********MY EDITS**********/
+		rtiTestCount = rtiTestCount + num;
+		if (!isinf(ray.tfar)) {
+			++hit;
+		}
+		/****************************/
+
         /* push lazy node onto stack */
         if (unlikely(lazy_node)) {
           stackPtr->ptr = lazy_node;
@@ -121,6 +153,20 @@ namespace embree
           stackPtr++;
         }
       }
+
+
+	  /**********MY EDITS**********/
+#ifdef GEN_FILES
+	  if (hit > 1) {
+		  std::cout << "test" << std::endl;
+	  }
+
+	  rayData.open("C:/Users/evanwaxman/Documents/workspace/embree/rayData.txt", std::ios_base::app);
+	  rayData << ray.id << " " << nodeCount << " " << rtiTestCount << " " << hit << std::endl;
+	  rayData.close();
+#endif // GEN_FILES
+
+	  /****************************/
     }
 
     template<int N, int types, bool robust, typename PrimitiveIntersector1>
