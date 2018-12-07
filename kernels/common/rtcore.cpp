@@ -39,7 +39,7 @@
 #include "c:\Users\evanwaxman\Documents\workspace\embree\kernels\geometry\curveNv.h"
 #include "c:\Users\evanwaxman\Documents\workspace\embree\kernels\subdiv\bezier_curve.h"
 
-//#define GEN_FILES
+#define GEN_FILES
 /************************************************************************************************************/
 
 
@@ -275,8 +275,8 @@ namespace embree
 	std::queue<BBox3fa> boundsQueue;
 
 	// create binary files for the bvh structure, as well as the primitives. (refer to asana for content structure)
-	std::ofstream bvhbin("C:/Users/evanwaxman/Documents/workspace/embree/bvh.bin", std::ios::out | std::ios::binary);
-	std::ofstream primbin("C:/Users/evanwaxman/Documents/workspace/embree/prim.bin", std::ios::out | std::ios::binary);
+	std::ofstream bvhbin("C:/Users/evanwaxman/Documents/workspace/embree/current_test/bvh.bin", std::ios::out | std::ios::binary);
+	std::ofstream primbin("C:/Users/evanwaxman/Documents/workspace/embree/current_test/prim.bin", std::ios::out | std::ios::binary);
 
 	// create text files for the bvh structure, as well as the primitives. (refer to asana for content structure)
 	//std::ofstream bvhtxt("C:/Users/evanwaxman/Documents/workspace/embree/bvh.txt");
@@ -416,7 +416,7 @@ namespace embree
 							/***************	FOR BIN FILE	********************/
 							char primarray[13];
 
-							// write 64-bit node id
+							// write 32-bit node id
 							primarray[3] = tempID & 0xff;
 							primarray[2] = (tempID >> 8) & 0xff;
 							primarray[1] = (tempID >> 16) & 0xff;
