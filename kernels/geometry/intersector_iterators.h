@@ -38,6 +38,10 @@ namespace embree
 		  /***MY EDITS***/
 		  hitCount = 0;
 		  testCount = 0;
+
+		  if (num > 1) {
+			  std::cout << "ERROR: LEAF SIZE > 1" << std::endl;
+		  }
 		  /**************/
 		  for (size_t i = 0; i < num; i++) {
 			  Intersector::intersect(pre, ray, context, prim[i]);
