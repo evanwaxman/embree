@@ -26,12 +26,14 @@
 #include <fstream>
 
 //#define GEN_FILES
+#define GEN_RAY_STATS
 #define RUN_SEQUENTIAL
 /****************************/
 
 namespace embree {
 
 /***MY GLOBAL VARIABLES***/
+#ifdef GEN_FILES
 std::ofstream primaryRayBin;
 std::ofstream bounce1RayBin;
 std::ofstream bounce2RayBin;
@@ -48,6 +50,13 @@ std::ofstream bounce4IntersectionBin;
 std::ofstream bounce5IntersectionBin;
 std::ofstream bounce6IntersectionBin;
 std::ofstream bounce7IntersectionBin;
+#endif // GEN_FILES
+
+#ifdef GEN_RAY_STATS
+std::ofstream rayStats;
+#endif // GEN_RAY_STATS
+
+
 unsigned int myRayID = 0;
 //std::chrono::duration<double> intersectTime = std::chrono::duration < double>(0.0);
 /*************************/
@@ -1645,12 +1654,17 @@ Vec3fa renderPixelFunction(float x, float y, RandomSampler& sampler, const ISPCC
     InitIntersectionContext(&context);
     context.context.flags = (i == 0) ? g_iflags_coherent : g_iflags_incoherent;
 
-
-
 	/***************************************MY EDITS**************************************/
-#ifdef GEN_FILES
 	ray.id = myRayID;
+#ifdef GEN_RAY_STATS
 
+	rayStats.open("C:/Users/evanwaxman/Documents/workspace/embree/ray_stats/rayStats.txt", std::ios_base::app);
+	rayStats << ray.id << ", " << i << ", ";
+	rayStats.close();
+
+#endif // GEN_RAY_STATS
+
+#ifdef GEN_FILES
 	/***WRITE RAYS TO BIN FILES HERE***/
 	if (i == 0) {
 		// write 32-bit ray id
@@ -1660,7 +1674,7 @@ Vec3fa renderPixelFunction(float x, float y, RandomSampler& sampler, const ISPCC
 		rayarray[0] = (ray.id >> 24) & 0xff;
 		primaryRayBin.write(rayarray, 4);
 
-		// write 3 32-bit float origin coordinates
+		// write 6 32-bit float origin coordinates
 		// NOTE: writes most significant float byte first
 		tempChar = (char *)&ray.org.x;
 		primaryRayBin.write(&tempChar[3], 1);
@@ -2270,6 +2284,8 @@ Vec3fa renderPixelFunction(float x, float y, RandomSampler& sampler, const ISPCC
 	}
 #endif
 
+	++myRayID;
+
 	//std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
 
 	//intersectTime =  std::chrono::duration_cast<std::chrono::duration<double>>(intersectTime + (end - start));
@@ -2352,11 +2368,6 @@ Vec3fa renderPixelFunction(float x, float y, RandomSampler& sampler, const ISPCC
     float sign = dot(wi1.v,dg.Ng) < 0.0f ? -1.0f : 1.0f;
     dg.P = dg.P + sign*dg.eps*dg.Ng;
     init_Ray(ray, dg.P,normalize(wi1.v),dg.eps,inf,time);
-
-
-	/*****************MY EDITS******************/
-	++myRayID;
-	/*******************************************/
   }
   return L;
 }
@@ -2559,22 +2570,22 @@ extern "C" void device_render (int* pixels,
 
   // open raybin file, where new data is appended to the end of file
 #ifdef GEN_FILES
-  primaryRayBin.open("C:/Users/evanwaxman/Documents/workspace/embree/primaryRay.bin", std::ios::out | std::ios::binary);
-  bounce1RayBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce1Ray.bin", std::ios::out | std::ios::binary);
-  bounce2RayBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce2Ray.bin", std::ios::out | std::ios::binary);
-  bounce3RayBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce3Ray.bin", std::ios::out | std::ios::binary);
-  bounce4RayBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce4Ray.bin", std::ios::out | std::ios::binary);
-  bounce5RayBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce5Ray.bin", std::ios::out | std::ios::binary);
-  bounce6RayBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce6Ray.bin", std::ios::out | std::ios::binary);
-  bounce7RayBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce7Ray.bin", std::ios::out | std::ios::binary);
-  primaryIntersectionBin.open("C:/Users/evanwaxman/Documents/workspace/embree/primaryIntersection.bin", std::ios::out | std::ios::binary);
-  bounce1IntersectionBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce1Intersection.bin", std::ios::out | std::ios::binary);
-  bounce2IntersectionBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce2Intersection.bin", std::ios::out | std::ios::binary);
-  bounce3IntersectionBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce3Intersection.bin", std::ios::out | std::ios::binary);
-  bounce4IntersectionBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce4Intersection.bin", std::ios::out | std::ios::binary);
-  bounce5IntersectionBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce5Intersection.bin", std::ios::out | std::ios::binary);
-  bounce6IntersectionBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce6Intersection.bin", std::ios::out | std::ios::binary);
-  bounce7IntersectionBin.open("C:/Users/evanwaxman/Documents/workspace/embree/bounce7Intersection.bin", std::ios::out | std::ios::binary);
+  primaryRayBin.open("C:/Users/evanwaxman/Documents/workspace/embree/current_test/primaryRay.bin", std::ios::out | std::ios::binary);
+  bounce1RayBin.open("C:/Users/evanwaxman/Documents/workspace/embree/current_test/bounce1Ray.bin", std::ios::out | std::ios::binary);
+  bounce2RayBin.open("C:/Users/evanwaxman/Documents/workspace/embree/current_test/bounce2Ray.bin", std::ios::out | std::ios::binary);
+  bounce3RayBin.open("C:/Users/evanwaxman/Documents/workspace/embree/current_test/bounce3Ray.bin", std::ios::out | std::ios::binary);
+  bounce4RayBin.open("C:/Users/evanwaxman/Documents/workspace/embree/current_test/bounce4Ray.bin", std::ios::out | std::ios::binary);
+  bounce5RayBin.open("C:/Users/evanwaxman/Documents/workspace/embree/current_test/bounce5Ray.bin", std::ios::out | std::ios::binary);
+  bounce6RayBin.open("C:/Users/evanwaxman/Documents/workspace/embree/current_test/bounce6Ray.bin", std::ios::out | std::ios::binary);
+  bounce7RayBin.open("C:/Users/evanwaxman/Documents/workspace/embree/current_test/bounce7Ray.bin", std::ios::out | std::ios::binary);
+  primaryIntersectionBin.open("C:/Users/evanwaxman/Documents/workspace/embree/current_test/primaryIntersection.bin", std::ios::out | std::ios::binary);
+  bounce1IntersectionBin.open("C:/Users/evanwaxman/Documents/workspace/embree/current_test/bounce1Intersection.bin", std::ios::out | std::ios::binary);
+  bounce2IntersectionBin.open("C:/Users/evanwaxman/Documents/workspace/embree/current_test/bounce2Intersection.bin", std::ios::out | std::ios::binary);
+  bounce3IntersectionBin.open("C:/Users/evanwaxman/Documents/workspace/embree/current_test/bounce3Intersection.bin", std::ios::out | std::ios::binary);
+  bounce4IntersectionBin.open("C:/Users/evanwaxman/Documents/workspace/embree/current_test/bounce4Intersection.bin", std::ios::out | std::ios::binary);
+  bounce5IntersectionBin.open("C:/Users/evanwaxman/Documents/workspace/embree/current_test/bounce5Intersection.bin", std::ios::out | std::ios::binary);
+  bounce6IntersectionBin.open("C:/Users/evanwaxman/Documents/workspace/embree/current_test/bounce6Intersection.bin", std::ios::out | std::ios::binary);
+  bounce7IntersectionBin.open("C:/Users/evanwaxman/Documents/workspace/embree/current_test/bounce7Intersection.bin", std::ios::out | std::ios::binary);
 #endif
 
 #ifdef RUN_SEQUENTIAL

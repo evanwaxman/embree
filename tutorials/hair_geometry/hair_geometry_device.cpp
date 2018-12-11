@@ -490,11 +490,16 @@ extern "C" void device_render (int* pixels,
   /* render frame */
   const int numTilesX = (width +TILE_SIZE_X-1)/TILE_SIZE_X;
   const int numTilesY = (height+TILE_SIZE_Y-1)/TILE_SIZE_Y;
+/*
   parallel_for(size_t(0),size_t(numTilesX*numTilesY),[&](const range<size_t>& range) {
     const int threadIndex = (int)TaskScheduler::threadIndex();
     for (size_t i=range.begin(); i<range.end(); i++)
       renderTileTask((int)i,threadIndex,pixels,width,height,time,camera,numTilesX,numTilesY);
-  }); 
+  });
+  */
+  for (size_t i = 0; i < (numTilesX*numTilesX); i++) {
+	  renderTileTask((int)i, 0, pixels, width, height, time, camera, numTilesX, numTilesY);
+  }
 }
 
 /* called by the C++ code for cleanup */

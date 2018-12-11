@@ -19,6 +19,15 @@
 #include "curveNv.h"
 #include "curveNi_intersector.h"
 
+
+/**********MY EDITS**********/
+#include <iostream>
+#include <fstream>
+
+#include "C:\Users\evanwaxman\Documents\workspace\embree\tutorials\common\core\ray.h"
+/****************************/
+
+
 namespace embree
 {
   namespace isa
@@ -32,6 +41,14 @@ namespace embree
       template<typename Intersector, typename Epilog>
         static __forceinline void intersect_t(const Precalculations& pre, RayHit& ray, IntersectContext* context, const Primitive& prim)
       {
+
+		/**********MY EDITS**********/
+		bool hit = false;
+		testCount = 0;
+		hitCount = 0;
+		/****************************/
+
+
         vfloat<M> tNear;
         vbool<M> valid = CurveNiIntersector1<M>::intersect(ray,prim,tNear);
 
@@ -61,8 +78,20 @@ namespace embree
             }
           }
 
-          Intersector().intersect(pre,ray,geom,primID,a0,a1,a2,a3,Epilog(ray,context,geomID,primID));
-          mask &= movemask(tNear <= vfloat<M>(ray.tfar));
+		  /**********MY EDITS**********/
+		  hit = false;
+		  /****************************/
+
+          hit = Intersector().intersect(pre,ray,geom,primID,a0,a1,a2,a3,Epilog(ray,context,geomID,primID));
+
+		  /**********MY EDITS**********/
+		  if (hit == true) {
+			  ++hitCount;
+		  }
+		  ++testCount;
+		  /****************************/
+          
+		  mask &= movemask(tNear <= vfloat<M>(ray.tfar));
         }
       }
 

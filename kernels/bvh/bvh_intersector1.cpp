@@ -40,8 +40,9 @@
 /**********MY EDITS**********/
 #include <iostream>
 #include <fstream>
+#include "C:\Users\evanwaxman\Documents\workspace\embree\tutorials\common\core\ray.h"
 
-//#define GEN_FILES
+#define GEN_RAY_STATS
 /****************************/
 
 namespace embree
@@ -56,11 +57,13 @@ namespace embree
 	  /**********MY EDITS**********/
 	  int nodeCount = 0;
 	  int rtiTestCount = 0;
-	  int hit = 0;
+	  int rtiHit = 0;
+	  int rciTestCount = 0;
+	  int rciHit = 0;
 
-#ifdef GEN_FILES
-	  std::ofstream rayData;
-#endif // GEN_FILES
+#ifdef GEN_RAY_STATS
+	  std::ofstream rayStats;
+#endif // GEN_RAY_STATS
 	  /****************************/
 
       /* perform per ray precalculations required by the primitive intersector */
@@ -116,9 +119,11 @@ namespace embree
           bool nodeIntersected = BVHNNodeIntersector1<N, Nx, types, robust>::intersect(cur, tray, ray.time(), tNear, mask);
 
 
+
 		  /**********MY EDITS**********/
 		  ++nodeCount;
 		  /****************************/
+
 
 
           if (unlikely(!nodeIntersected)) { STAT3(normal.trav_nodes,-1,-1,-1); break; }
@@ -139,10 +144,15 @@ namespace embree
         PrimitiveIntersector1::intersect(This, pre, ray, context, prim, num, tray, lazy_node);
         tray.tfar = ray.tfar;
 
+		
 		/**********MY EDITS**********/
-		rtiTestCount = rtiTestCount + num;
-		if (!isinf(ray.tfar)) {
-			++hit;
+		if (strcmp(bvh->primTy->name(), "triangle4") == 0) {
+			rtiTestCount = rtiTestCount + testCount;
+			rtiHit = rtiHit + hitCount;
+		}
+		else if (strcmp(bvh->primTy->name(), "curve4v") == 0) {
+			rciTestCount = rciTestCount + testCount;
+			rciHit = rciHit + hitCount;
 		}
 		/****************************/
 
@@ -156,16 +166,11 @@ namespace embree
 
 
 	  /**********MY EDITS**********/
-#ifdef GEN_FILES
-	  if (hit > 1) {
-		  std::cout << "test" << std::endl;
-	  }
-
-	  rayData.open("C:/Users/evanwaxman/Documents/workspace/embree/rayData.txt", std::ios_base::app);
-	  rayData << ray.id << " " << nodeCount << " " << rtiTestCount << " " << hit << std::endl;
-	  rayData.close();
-#endif // GEN_FILES
-
+#ifdef GEN_RAY_STATS
+	  rayStats.open("C:/Users/evanwaxman/Documents/workspace/embree/ray_stats/rayStats.txt", std::ios_base::app);
+	  rayStats <<  nodeCount << ", " << rtiTestCount << ", " << rtiHit << ", " << rciTestCount << ", " << rciHit << std::endl;
+	  rayStats.close();
+#endif // GEN_RAY_STATS
 	  /****************************/
     }
 

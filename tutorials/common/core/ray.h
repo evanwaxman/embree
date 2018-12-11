@@ -138,3 +138,6 @@ __forceinline void InitIntersectionContext(struct IntersectContext* context)
   rtcInitIntersectContext(&context->context);
   context->userRayExt = NULL;
 }
+
+__declspec(selectany) int hitCount;
+__declspec(selectany) int testCount;

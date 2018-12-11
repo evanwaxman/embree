@@ -39,7 +39,7 @@
 #include "c:\Users\evanwaxman\Documents\workspace\embree\kernels\geometry\curveNv.h"
 #include "c:\Users\evanwaxman\Documents\workspace\embree\kernels\subdiv\bezier_curve.h"
 
-#define GEN_FILES
+//#define GEN_FILES
 /************************************************************************************************************/
 
 
@@ -329,7 +329,10 @@ namespace embree
 					boundsQueue.pop();
 
 					// check the geometry type for the leaf node
-					if (scene->geometries[0]->gtype == 16) {		// GTY_TRIANGLE_MESH
+					//if (scene->geometries[0]->gtype == 16) {		// GTY_TRIANGLE_MESH
+					if (strcmp(bvh8->primTy->name(), "triangle4") == 0) {
+
+						//std::cout << "GEOM TYPE: " << bvh8->primTy->name() << std::endl;
 						
 						// cast the tempNode leaf as the appropriate primitive type (based on the geometry type)
 						Triangle4* tri = (Triangle4*)tempNode.leaf(num);
@@ -439,7 +442,7 @@ namespace embree
 							primbin.write(primarray, 13);
 
 
-							// write 6 32-bit float coordinates for the leaf node
+							// write 9 32-bit float coordinates for the leaf node
 							// NOTE: writes most significant float byte first
 							float tempFloat;
 							char* tempChar;
@@ -508,7 +511,7 @@ namespace embree
 						}
 					}
 					// note, current code does not support other geometry types (for now)
-					else if (scene->geometries[0]->gtype == 4) {	// GTY_FLAT_BEZIER_CURVE
+					/*else if (scene->geometries[0]->gtype == 4) {	// GTY_FLAT_BEZIER_CURVE
 						//const PrimRef& prim = (PrimRef)tempNode.leaf(num);
 						Curve4v* curve = (Curve4v*)tempNode.leaf(num);
 						BezierCurve3fa* bezCurve = (BezierCurve3fa*)tempNode.leaf(num);
@@ -518,9 +521,9 @@ namespace embree
 						//prim->bounds() << "\n";
 
 						std::cout << "FLAT_BEZIER_CURVE GEOMETRY" << std::endl;
-					}
+					}*/
 					else {
-						std::cout << "UNKNOWN GEOM TYPE" << std::endl;
+						std::cout << "ERROR: UNKNOWN GEOM TYPE: " << bvh8->primTy->name() << std::endl;
 					}
 				}
 				// check if current node is an aligned node (inner node)
@@ -666,8 +669,7 @@ namespace embree
 				const unsigned long long tempID = idQueue.front();
 
 				idQueue.pop();
-
-
+				
 				/**********************************************************************************************
 				*	check if tempNode is a leaf node calling isLeaf() and type()
 				*	
@@ -691,7 +693,10 @@ namespace embree
 					boundsQueue.pop();
 
 					// check the geometry type for the leaf node
-					if (scene->geometries[0]->gtype == 16) {		// GTY_TRIANGLE_MESH
+					//if (scene->geometries[0]->gtype == 16) {		// GTY_TRIANGLE_MESH
+					if (strcmp(bvh8->primTy->name(), "triangle4") == 0) {
+
+						//std::cout << "GEOM TYPE: " << bvh8->primTy->name() << std::endl;
 						
 						// cast the tempNode leaf as the appropriate primitive type (based on the geometry type)
 						Triangle4* tri = (Triangle4*)tempNode.leaf(num);
@@ -871,7 +876,7 @@ namespace embree
 						//}
 					}
 					// note, current code does not support other geometry types (for now)
-					else if (scene->geometries[0]->gtype == 4) {	// GTY_FLAT_BEZIER_CURVE
+					/*else if (scene->geometries[0]->gtype == 4) {	// GTY_FLAT_BEZIER_CURVE
 						//const PrimRef& prim = (PrimRef)tempNode.leaf(num);
 						Curve4v* curve = (Curve4v*)tempNode.leaf(num);
 						BezierCurve3fa* bezCurve = (BezierCurve3fa*)tempNode.leaf(num);
@@ -881,9 +886,9 @@ namespace embree
 						//prim->bounds() << "\n";
 
 						std::cout << "ERRRO: FLAT_BEZIER_CURVE GEOMETRY" << std::endl;
-					}
+					}*/
 					else {
-						std::cout << "ERROR: UNKNOWN GEOM TYPE" << std::endl;
+						std::cout << "ERROR: UNKNOWN GEOM TYPE: " << bvh8->primTy->name() << std::endl;
 					}
 				}
 				// check if current node is an aligned node (inner node)

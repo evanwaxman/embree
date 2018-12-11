@@ -25,6 +25,7 @@ namespace embree
 {
   namespace isa
   {
+
     template<typename Intersector>
     struct ArrayIntersector1
     {
@@ -34,8 +35,20 @@ namespace embree
       template<int N, int Nx, bool robust>
       static __forceinline void intersect(const Accel::Intersectors* This, Precalculations& pre, RayHit& ray, IntersectContext* context, const Primitive* prim, size_t num, const TravRay<N,Nx,robust> &tray, size_t& lazy_node)
       {
-        for (size_t i=0; i<num; i++)
-          Intersector::intersect(pre,ray,context,prim[i]);
+		  /***MY EDITS***/
+		  hitCount = 0;
+		  testCount = 0;
+		  /**************/
+		  for (size_t i = 0; i < num; i++) {
+			  Intersector::intersect(pre, ray, context, prim[i]);
+
+			  /***MY EDITS***/
+			  ++testCount;
+			  if (!isinf(ray.tfar)) {
+				  ++hitCount;
+			  }
+			  /**************/
+		  }
       }
 
       template<int N, int Nx, bool robust>
