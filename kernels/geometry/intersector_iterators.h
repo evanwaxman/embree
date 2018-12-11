@@ -21,6 +21,11 @@
 #include "../bvh/node_intersector1.h"
 #include "../bvh/node_intersector_packet.h"
 
+
+/*** MY EDITS ***/
+#include "../../tutorials/common/core/ray.h"
+/***************/
+
 namespace embree
 {
   namespace isa

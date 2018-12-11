@@ -24,7 +24,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "C:\Users\evanwaxman\Documents\workspace\embree\tutorials\common\core\ray.h"
+#include "../../tutorials/common/core/ray.h"
 /****************************/
 
 
