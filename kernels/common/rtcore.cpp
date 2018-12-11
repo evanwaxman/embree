@@ -29,15 +29,15 @@
 /********************************************** MY EDITS ****************************************************/
 #include "../../kernels/bvh/bvh.h"
 #include "../../kernels/geometry/trianglev.h"
-#include "C:\Users\evanwaxman\Documents\workspace\embree\kernels\common\accel.h"
+#include "accel.h"
 #include <queue>
 #include <iostream>
 #include <fstream>
-#include "C:\Users\evanwaxman\Documents\workspace\embree\kernels\common\scene_instance.h"
-#include "c:\Users\evanwaxman\Documents\workspace\embree\tutorials\common\tutorial\tutorial_device.h"
-#include "c:\Users\evanwaxman\Documents\workspace\embree\kernels\geometry\triangle.h"
-#include "c:\Users\evanwaxman\Documents\workspace\embree\kernels\geometry\curveNv.h"
-#include "c:\Users\evanwaxman\Documents\workspace\embree\kernels\subdiv\bezier_curve.h"
+#include "scene_instance.h"
+#include "../../tutorials/common/tutorial/tutorial_device.h"
+#include "../geometry/triangle.h"
+#include "../geometry/curveNv.h"
+#include "../subdiv/bezier_curve.h"
 
 //#define GEN_FILES
 /************************************************************************************************************/
