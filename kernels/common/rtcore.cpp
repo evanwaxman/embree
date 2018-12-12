@@ -275,8 +275,8 @@ namespace embree
 	std::queue<BBox3fa> boundsQueue;
 
 	// create binary files for the bvh structure, as well as the primitives. (refer to asana for content structure)
-	std::ofstream bvhbin("C:/Users/evanwaxman/Documents/workspace/embree/current_test/bvh.bin", std::ios::out | std::ios::binary);
-	std::ofstream primbin("C:/Users/evanwaxman/Documents/workspace/embree/current_test/prim.bin", std::ios::out | std::ios::binary);
+	std::ofstream bvhbin("/home2/evanwaxman/workspace/embree/current_test/bvh.bin", std::ios::out | std::ios::binary);
+	std::ofstream primbin("/home2/evanwaxman/workspace/embree/current_test/prim.bin", std::ios::out | std::ios::binary);
 
 	// create text files for the bvh structure, as well as the primitives. (refer to asana for content structure)
 	//std::ofstream bvhtxt("C:/Users/evanwaxman/Documents/workspace/embree/bvh.txt");

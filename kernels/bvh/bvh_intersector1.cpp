@@ -167,7 +167,7 @@ namespace embree
 
 	  /**********MY EDITS**********/
 #ifdef GEN_RAY_STATS
-	  rayStats.open("C:/Users/evanwaxman/Documents/workspace/embree/ray_stats/rayStats.txt", std::ios_base::app);
+	  rayStats.open("/home2/evanwaxman/workspace/embree/ray_stats/rayStats.txt", std::ios_base::app);
 	  rayStats <<  nodeCount << ", " << rtiTestCount << ", " << rtiHit << ", " << rciTestCount << ", " << rciHit << std::endl;
 	  rayStats.close();
 #endif // GEN_RAY_STATS
