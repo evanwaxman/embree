@@ -290,7 +290,7 @@ namespace embree
 		if (accel->type == AccelData::TY_BVH4) {
 			bvh4 = (BVH4*)accel;
 			BVH4::NodeRef node = bvh4->root;
-			std::cout << "***********************************TY_BVH4*********************************************\n";
+			//std::cout << "***********************************TY_BVH4*********************************************\n";
 
 			// initialize queue with root node and root id
 			nodeQueue4.push(node);
@@ -653,7 +653,7 @@ namespace embree
 			bvh8 = (BVH8*)accel;
 			BVH8::NodeRef node = bvh8->root;
 
-			std::cout << "***********************************TY_BVH8*********************************************\n";
+			//std::cout << "***********************************TY_BVH8*********************************************\n";
 
 			// initialize node queue with root node and id queue root id
 			nodeQueue8.push(node);
