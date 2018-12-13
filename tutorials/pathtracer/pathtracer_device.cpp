@@ -2618,6 +2618,7 @@ extern "C" void device_render (int* pixels,
   bounce7IntersectionBin.close();
 #endif
   std::cout << "FRAME END" << std::endl;
+  std::cout << "FILES GENERATED" << std::endl;
 
   //std::cout << "INTERSECT TIME = " << intersectTime.count() << "seconds.";
   /*************/
