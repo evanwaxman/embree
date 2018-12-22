@@ -417,28 +417,33 @@ namespace embree
 							*******************************************************/
 
 							/***************	FOR BIN FILE	********************/
-							char primarray[13];
+							char primarray[17];
 
-							// write 32-bit node id
-							primarray[3] = tempID & 0xff;
-							primarray[2] = (tempID >> 8) & 0xff;
-							primarray[1] = (tempID >> 16) & 0xff;
-							primarray[0] = (tempID >> 24) & 0xff;
+                                                	// write 64-bit node id
+                                        	        primarray[7] = tempID & 0xff;
+                                	                primarray[6] = (tempID >> 8) & 0xff;
+                        	                        primarray[5] = (tempID >> 16) & 0xff;
+                	                                primarray[4] = (tempID >> 24) & 0xff;
+        	                                        primarray[3] = (tempID >> 32) & 0xff;
+	                                                primarray[2] = (tempID >> 40) & 0xff;
+	                                                primarray[1] = (tempID >> 48) & 0xff;
+	                                                primarray[0] = (tempID >> 56) & 0xff;
+
 
 							// write 8-bit number of primitives in leaf node
-							primarray[4] = tri->size() & 0xff;
+							primarray[8] = tri->size() & 0xff;
 
 							// write 32-bit geometry id
-							primarray[8] = tri->geomID(j) & 0xff;
-							primarray[7] = (tri->geomID(j) >> 8) & 0xff;
-							primarray[6] = (tri->geomID(j) >> 16) & 0xff;
-							primarray[5] = (tri->geomID(j) >> 24) & 0xff;
+							primarray[12] = tri->geomID(j) & 0xff;
+							primarray[11] = (tri->geomID(j) >> 8) & 0xff;
+							primarray[10] = (tri->geomID(j) >> 16) & 0xff;
+							primarray[9] = (tri->geomID(j) >> 24) & 0xff;
 
 							// write 32-bit primitive id
-							primarray[12] = tri->primID(j) & 0xff;
-							primarray[11] = (tri->primID(j) >> 8) & 0xff;
-							primarray[10] = (tri->primID(j) >> 16) & 0xff;
-							primarray[9] = (tri->primID(j) >> 24) & 0xff;
+							primarray[16] = tri->primID(j) & 0xff;
+							primarray[15] = (tri->primID(j) >> 8) & 0xff;
+							primarray[14] = (tri->primID(j) >> 16) & 0xff;
+							primarray[13] = (tri->primID(j) >> 24) & 0xff;
 							primbin.write(primarray, 13);
 
 
@@ -782,30 +787,33 @@ namespace embree
 							*******************************************************/
 
 							/***************	FOR BIN FILE	********************/
-							char primarray[13];
+                                                        char primarray[17];
 
-							// write 64-bit node id
-							primarray[3] = tempID & 0xff;
-							primarray[2] = (tempID >> 8) & 0xff;
-							primarray[1] = (tempID >> 16) & 0xff;
-							primarray[0] = (tempID >> 24) & 0xff;
+                                                        // write 64-bit node id
+                                                        primarray[7] = tempID & 0xff;
+                                                        primarray[6] = (tempID >> 8) & 0xff;
+                                                        primarray[5] = (tempID >> 16) & 0xff;
+                                                        primarray[4] = (tempID >> 24) & 0xff;
+                                                        primarray[3] = (tempID >> 32) & 0xff;
+                                                        primarray[2] = (tempID >> 40) & 0xff;
+                                                        primarray[1] = (tempID >> 48) & 0xff;
+                                                        primarray[0] = (tempID >> 56) & 0xff;
 
-							// write 8-bit number of primitives in leaf node
-							primarray[4] = tri->size() & 0xff;
+                                                        // write 8-bit number of primitives in leaf node
+                                                        primarray[8] = tri->size() & 0xff;
 
-							// write 32-bit geometry id
-							primarray[8] = tri->geomID(j) & 0xff;
-							primarray[7] = (tri->geomID(j) >> 8) & 0xff;
-							primarray[6] = (tri->geomID(j) >> 16) & 0xff;
-							primarray[5] = (tri->geomID(j) >> 24) & 0xff;
-							
-							// write 32-bit primitive id
-							primarray[12] = tri->primID(j) & 0xff;
-							primarray[11] = (tri->primID(j) >> 8) & 0xff;
-							primarray[10] = (tri->primID(j) >> 16) & 0xff;
-							primarray[9] = (tri->primID(j) >> 24) & 0xff;
-							primbin.write(primarray, 13);
+                                                        // write 32-bit geometry id
+                                                        primarray[12] = tri->geomID(j) & 0xff;
+                                                        primarray[11] = (tri->geomID(j) >> 8) & 0xff;
+                                                        primarray[10] = (tri->geomID(j) >> 16) & 0xff;
+                                                        primarray[9] = (tri->geomID(j) >> 24) & 0xff;
 
+                                                        // write 32-bit primitive id
+                                                        primarray[16] = tri->primID(j) & 0xff;
+                                                        primarray[15] = (tri->primID(j) >> 8) & 0xff;
+                                                        primarray[14] = (tri->primID(j) >> 16) & 0xff;
+                                                        primarray[13] = (tri->primID(j) >> 24) & 0xff;
+                                                        primbin.write(primarray, 13);
 
 							// write 6 32-bit float coordinates for the leaf node
 							// NOTE: writes most significant float byte first

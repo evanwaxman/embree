@@ -42,7 +42,7 @@
 #include <fstream>
 #include "../../tutorials/common/core/ray.h"
 
-#define GEN_RAY_STATS
+//#define GEN_RAY_STATS
 /****************************/
 
 namespace embree
