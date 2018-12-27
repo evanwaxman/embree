@@ -444,7 +444,7 @@ namespace embree
 							primarray[15] = (tri->primID(j) >> 8) & 0xff;
 							primarray[14] = (tri->primID(j) >> 16) & 0xff;
 							primarray[13] = (tri->primID(j) >> 24) & 0xff;
-							primbin.write(primarray, 13);
+							primbin.write(primarray, 17);
 
 
 							// write 9 32-bit float coordinates for the leaf node
@@ -813,7 +813,7 @@ namespace embree
                                                         primarray[15] = (tri->primID(j) >> 8) & 0xff;
                                                         primarray[14] = (tri->primID(j) >> 16) & 0xff;
                                                         primarray[13] = (tri->primID(j) >> 24) & 0xff;
-                                                        primbin.write(primarray, 13);
+                                                        primbin.write(primarray, 17);
 
 							// write 6 32-bit float coordinates for the leaf node
 							// NOTE: writes most significant float byte first
