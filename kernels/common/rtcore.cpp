@@ -330,7 +330,7 @@ namespace embree
 
 					// check the geometry type for the leaf node
 					//if (scene->geometries[0]->gtype == 16) {		// GTY_TRIANGLE_MESH
-					if (strcmp(bvh8->primTy->name(), "triangle4") == 0) {
+					if (strcmp(bvh4->primTy->name(), "triangle4") == 0) {
 
 						//std::cout << "GEOM TYPE: " << bvh8->primTy->name() << std::endl;
 						
@@ -1006,9 +1006,7 @@ namespace embree
 					for (int i = 0; i < 8; i++) {
 						if (n8->child(i) == 8) break;
 						nodeQueue8.push(n8->child(i));
-
-						/////////////////////////////////////////////////////////////////////////////// CHANGE THIS BACK TO tempID * 8 when doing 8-way BVH
-						idQueue.push(tempID * 4 + (i + 1));
+						idQueue.push(tempID * 8 + (i + 1));
 
 						// push leaf node bounds onto queue to access when current node is a leaf node
 						if ((n8->child(i).type() > 8 && n8->child(i).type() < 16) && n8->child(i).isLeaf() > 0) {	// valid leaf node
