@@ -255,41 +255,62 @@ namespace embree
 
 	/**********************************  MY EDITS  **********************************************/
 #ifdef GEN_FILES
-	// create bvh pointers
+	// bvh pointers to point to the bvh objext. bvh4 points to a 4-way bvh, bvh8 points to an 8-way bvh.
 	BVH4* bvh4 = nullptr;
 	BVH8* bvh8 = nullptr;
 
-	// create aligned node pointers
+	/* aligned node pointers point to inner nodes within the bvh. An inner node is any bvh node that is not a leaf or
+	 * root. We are using aligned bvh's so we will use AlighnedNode pointers.
+	 */
 	BVH4::AlignedNode* n4 = nullptr;
 	BVH8::AlignedNode* n8 = nullptr;
 
-	// node queue holds the node references for inner and leaf nodes
+	// nodeQueue holds the node references for inner and leaf nodes.
 	std::queue<BVH4::NodeRef> nodeQueue4;
 	std::queue<BVH8::NodeRef> nodeQueue8;
 
-	// id queue holds the node id's so that correct order is maintained
+	// idQueue holds the node ids as the bvh is traversed so that correct order is maintained when creating the bvh file
 	std::queue<unsigned long long> idQueue;
 
-	// bounds queue holds the leaf node bounds so that it can be referenced when calculating the leaf
-	// node's primitive's coordinates.
+	/* boundsQueue holds the leaf node bounds (of type BBox3fa) so that they can be referenced later in the bvh traversal
+	 * when calculating the leaf node's primitive coordinates.
+	 */
 	std::queue<BBox3fa> boundsQueue;
 
-	// create binary files for the bvh structure, as well as the primitives. (refer to asana for content structure)
+	/* create binary files for the bvh structure.
+	 * Structure of bvhbin file is as follows:
+	 * 	<64-bit node id><8-bit node type (1 for inner node, 2 for leaf node)><write 8-bit number of leaf children (primitives)>
+	 * 	<6 32-bit float coordinates for the leaf node (writes most significant float byte first)>
+	 */
 	std::ofstream bvhbin("/home2/evanwaxman/workspace/embree/current_test/bvh.bin", std::ios::out | std::ios::binary);
+	  
+	/* create binary files for the primitives within the bvh.
+	 * Structure of bvhbin file is as follows:
+	 * 	<64-bit node id><8-bit number of primitives in leaf node><32-bit geometry id><32-bit primitive id>
+	 * 	<9 32-bit float coordinates for the leaf node (writes most significant float byte first)>
+	 */
 	std::ofstream primbin("/home2/evanwaxman/workspace/embree/current_test/prim.bin", std::ios::out | std::ios::binary);
 
-	// create text files for the bvh structure, as well as the primitives. (refer to asana for content structure)
-	//std::ofstream bvhtxt("C:/Users/evanwaxman/Documents/workspace/embree/bvh.txt");
-	//std::ofstream primtxt("C:/Users/evanwaxman/Documents/workspace/embree/primitives.txt");
+	/* If txt files are desired instead, uncomment the two lines below and comment out the bin file creation lines.
+	std::ofstream bvhtxt("C:/Users/evanwaxman/Documents/workspace/embree/bvh.txt");
+	std::ofstream primtxt("C:/Users/evanwaxman/Documents/workspace/embree/primitives.txt");
+	 */
 
 	// NOTE: the current code only supports scenes with only triangles (for now)
 	if (bvhbin.is_open() && primbin.is_open()) {
+		// return acceleration structure pointer from scene object.
 		AccelData* accel = ((Accel*)scene)->intersectors.ptr;
 
 		//=================================================BVH4 CODE==========================================
+		// check if acceleration structure is a 4-way bvh
 		if (accel->type == AccelData::TY_BVH4) {
+			// assign pointer to bvh object
 			bvh4 = (BVH4*)accel;
+			
+			// assign pointer to bvh object
 			BVH4::NodeRef node = bvh4->root;
+			
+			// Print that the scene bvh is a 4-way bvh
 			//std::cout << "***********************************TY_BVH4*********************************************\n";
 
 			// initialize queue with root node and root id
@@ -300,19 +321,23 @@ namespace embree
 			while (!(nodeQueue4.empty())) {
 				// point tempNode to next node ref (can be inner or leaf node)
 				BVH4::NodeRef tempNode = nodeQueue4.front();
+				
+				// remove node from nodeQueue
 				nodeQueue4.pop();
 
 				// assign tempID to the correct node ID corrisponding to tempNode
 				const unsigned long long tempID = idQueue.front();
+				
+				// remove node ID from idQueue
 				idQueue.pop();
 
 				/**********************************************************************************************
-				*	check if tempNode is a leaf node calling isLeaf() and type()
+				*	check if tempNode is a leaf node by calling isLeaf() and type() functions.
 				*
 				*	isLeaf() will return:
 				*		-	8 if the node is a leaf node
 				*		NOTE: It was also return 8 if the node is empty, which is why type() must also be called.
-				*		You could just use type() to check for leaf node, but be why not be safe.
+				*		You could just use type() to check for leaf node, but why not be safe.
 				*	type() will return:
 				*		-	9-15 if it's a leaf node (each number representing one of 8 leaf nodes belonging to
 				*			an inner node)
@@ -324,20 +349,17 @@ namespace embree
 					// create bounding box objext
 					BBox3fa b;
 
-					// get bounding box for the tempNode leaf
+					// get bounding box coordinates for the tempNode leaf
 					b = boundsQueue.front();
+					
+					// remove bounding box from boundsQueue
 					boundsQueue.pop();
 
-					// check the geometry type for the leaf node
-					//if (scene->geometries[0]->gtype == 16) {		// GTY_TRIANGLE_MESH
-					if (strcmp(bvh4->primTy->name(), "triangle4") == 0) {
-
-						//std::cout << "GEOM TYPE: " << bvh8->primTy->name() << std::endl;
-						
+					// check the geometry type for the leaf node (current code only supports triangle4 type).
+					if (strcmp(bvh4->primTy->name(), "triangle4") == 0) {	
 						// cast the tempNode leaf as the appropriate primitive type (based on the geometry type)
 						Triangle4* tri = (Triangle4*)tempNode.leaf(num);
 
-						
 						// write leaf node info to bvh file
 						/***************	FOR TXT FILE	********************
 						bvhtxt << tempID << " 2 " << tri->size() << " " << b.lower.x << " " << b.lower.y << " " << b.lower.z << " "
@@ -406,7 +428,6 @@ namespace embree
 
 
 						// write primitive info to primitive file
-						//for (size_t i = 0; i < num; i++) {
 						for (size_t j = 0; j < tri->size(); j++) {
 
 							/***************	FOR TXT FILE	********************
@@ -512,10 +533,9 @@ namespace embree
 							primbin.write(&tempChar[1], 1);
 							primbin.write(&tempChar[0], 1);
 							/*******************************************************/
-						//}
 						}
 					}
-					// note, current code does not support other geometry types (for now)
+					// I started trying to support flat bezier curve geometry types but I never got around to finishing it.
 					/*else if (scene->geometries[0]->gtype == 4) {	// GTY_FLAT_BEZIER_CURVE
 						//const PrimRef& prim = (PrimRef)tempNode.leaf(num);
 						Curve4v* curve = (Curve4v*)tempNode.leaf(num);
@@ -527,34 +547,41 @@ namespace embree
 
 						std::cout << "FLAT_BEZIER_CURVE GEOMETRY" << std::endl;
 					}*/
-					else {
-						std::cout << "ERROR: UNKNOWN GEOM TYPE: " << bvh8->primTy->name() << std::endl;
+					else {	// unknown geometry type
+						// this will print the unknown geometry type in the bvh
+						std::cout << "ERROR: UNKNOWN GEOM TYPE: " << bvh4->primTy->name() << std::endl;
 					}
 				}
 				// check if current node is an aligned node (inner node)
 				else if (tempNode.isAlignedNode()) {
-
 					// point aligned node pointer to tempNode
 					n4 = tempNode.alignedNode();
+					
+					// create coordinate vectors
 					vector <float> lowerX;
 					vector <float> lowerY;
 					vector <float> lowerZ;
 					vector <float> upperX;
 					vector <float> upperY;
 					vector <float> upperZ;
+					
+					// initialize number of node children to 0
 					unsigned int numChildren = 0;
 
 					// push children bounds to their respective coordinate vectors
 					for (int i = 0; i < 4; i++) {
-						// an empty child node will have infinite bounds, do not store and break loop
+						// an empty child node will have infinite bounds, if bounds = +-inf then break loop
 						if (n4->bounds(i).lower.x == (float)pos_inf || n4->bounds(i).lower.x == (float)neg_inf) break;
 
+						// push coordinates to their respective vectors
 						lowerX.push_back(n4->bounds(i).lower.x);
 						lowerY.push_back(n4->bounds(i).lower.y);
 						lowerZ.push_back(n4->bounds(i).lower.z);
 						upperX.push_back(n4->bounds(i).upper.x);
 						upperY.push_back(n4->bounds(i).upper.y);
 						upperZ.push_back(n4->bounds(i).upper.z);
+						
+						// increment number of children belonging to tempNode
 						numChildren++;
 					}
 
@@ -635,11 +662,17 @@ namespace embree
 
 					// push children to queue
 					for (int i = 0; i < 4; i++) {
+						// double check this, but I'm pretty sure I have this here in case child node is empty in which case break for loop.
+						if (n8->child(i) == 8) break;
+						
+						// push child to nodeQueue
 						nodeQueue4.push(n4->child(i));
+						
+						// calculate child's node id and push to idQueue
 						idQueue.push(tempID * 4 + (i + 1));
 
-						// push leaf node bounds onto queue to access when current node is leaf node
-						if ((n8->child(i).type() > 8 && n8->child(i).type() < 16) && n8->child(i).isLeaf() > 0) {	// valid leaf node
+						// check if child is leaf node, if so then push leaf node bounds to boundsQueue
+						if ((n4->child(i).type() > 8 && n4->child(i).type() < 16) && n4->child(i).isLeaf() > 0) {	// valid leaf node
 							boundsQueue.push(n4->bounds(i));
 						}
 					}
@@ -653,11 +686,15 @@ namespace embree
 			}
 		}
 		//===================================BVH8 ONLY=============================
+		// check if acceleration structure is a 8-way bvh
 		else if (accel->type == AccelData::TY_BVH8) {
-			// point bvh pointer to accel object and the node pointer to the root of the bvh
+			// assign pointer to bvh object
 			bvh8 = (BVH8*)accel;
+			
+			// assign pointer to bvh root
 			BVH8::NodeRef node = bvh8->root;
 
+			// print the bvh type
 			//std::cout << "***********************************TY_BVH8*********************************************\n";
 
 			// initialize node queue with root node and id queue root id
@@ -668,20 +705,23 @@ namespace embree
 			while (!(nodeQueue8.empty())) {
 				// point tempNode to next node ref (can be inner or leaf node)
 				BVH8::NodeRef tempNode = nodeQueue8.front();
+				
+				// remove node from nodeQueue
 				nodeQueue8.pop();
 
 				// assign tempID to the correct node ID corrisponding to tempNode
 				const unsigned long long tempID = idQueue.front();
 
+				// remove node ID from idQueue
 				idQueue.pop();
 				
 				/**********************************************************************************************
-				*	check if tempNode is a leaf node calling isLeaf() and type()
+				*	check if tempNode is a leaf node calling isLeaf() and type() functions
 				*	
 				*	isLeaf() will return:
 				*		-	8 if the node is a leaf node
 				*		NOTE: It was also return 8 if the node is empty, which is why type() must also be called.
-				*		You could just use type() to check for leaf node, but be why not be safe.
+				*		You could just use type() to check for leaf node, but why not be safe.
 				*	type() will return: 
 				*		-	9-15 if it's a leaf node (each number representing one of 8 leaf nodes belonging to 
 				*			an inner node)
@@ -693,21 +733,17 @@ namespace embree
 					// create bounding box objext
 					BBox3fa b;
 
-					// get bounding box for the tempNode leaf
+					// get bounding box coordinates for the tempNode leaf
 					b = boundsQueue.front();
+					
+					// remove bounding box from boundsQueue
 					boundsQueue.pop();
 
-					// check the geometry type for the leaf node
-					//if (scene->geometries[0]->gtype == 16) {		// GTY_TRIANGLE_MESH
-					if (strcmp(bvh8->primTy->name(), "triangle4") == 0) {
-
-						//std::cout << "GEOM TYPE: " << bvh8->primTy->name() << std::endl;
-						
+					// check the geometry type for the leaf node (currently only supports triangle4 types)
+					if (strcmp(bvh8->primTy->name(), "triangle4") == 0) {						
 						// cast the tempNode leaf as the appropriate primitive type (based on the geometry type)
 						Triangle4* tri = (Triangle4*)tempNode.leaf(num);
-						//Triangle4v* tri = (Triangle4v*)tempNode.leaf(num);
-
-
+						
 						// write leaf node info to bvh file
 						/***************	FOR TXT FILE	********************
 						bvhtxt << tempID << " 2 " << tri->size() << " " << b.lower.x << " " << b.lower.y << " " << b.lower.z << " "
@@ -776,7 +812,6 @@ namespace embree
 
 
 						// write primitive info to primitive file
-						//for (size_t i = 0; i < num; i++) {
 						for (size_t j = 0; j < tri->size(); j++) {
 
 							/***************	FOR TXT FILE	********************
@@ -881,9 +916,8 @@ namespace embree
 							primbin.write(&tempChar[0], 1);
 							/*******************************************************/
 						}
-						//}
 					}
-					// note, current code does not support other geometry types (for now)
+					// I started trying to support flat bezier curve geometry types but I never finished
 					/*else if (scene->geometries[0]->gtype == 4) {	// GTY_FLAT_BEZIER_CURVE
 						//const PrimRef& prim = (PrimRef)tempNode.leaf(num);
 						Curve4v* curve = (Curve4v*)tempNode.leaf(num);
@@ -895,7 +929,8 @@ namespace embree
 
 						std::cout << "ERRRO: FLAT_BEZIER_CURVE GEOMETRY" << std::endl;
 					}*/
-					else {
+					else {	// unknown geometry type
+						// this will print the unknown geometry type within the bvh
 						std::cout << "ERROR: UNKNOWN GEOM TYPE: " << bvh8->primTy->name() << std::endl;
 					}
 				}
@@ -905,25 +940,31 @@ namespace embree
 					// point aligned node pointer to tempNode
 					n8 = tempNode.alignedNode();
 
+					// create coordinate vectors
 					vector <float> lowerX;
 					vector <float> lowerY;
 					vector <float> lowerZ;
 					vector <float> upperX;
 					vector <float> upperY;
 					vector <float> upperZ;
+					
+					// init number of tempNode children to 0
 					unsigned int numChildren = 0;
 
 					// push children bounds to their respective coordinate vectors
 					for (int i = 0; i < 8; i++) {
-						// an empty child node will have infinite bounds, do not store and break loop
+						// an empty child node will have infinite bounds, if bounds = +-inf then and break loop
 						if (n8->bounds(i).lower.x == (float)pos_inf || n8->bounds(i).lower.x == (float)neg_inf) break;
 
+						// push coordinates to their respective vectors
 						lowerX.push_back(n8->bounds(i).lower.x);
 						lowerY.push_back(n8->bounds(i).lower.y);
 						lowerZ.push_back(n8->bounds(i).lower.z);
 						upperX.push_back(n8->bounds(i).upper.x);
 						upperY.push_back(n8->bounds(i).upper.y);
 						upperZ.push_back(n8->bounds(i).upper.z);
+						
+						// increment children count for tempNode
 						numChildren++;
 					}
 
@@ -1004,11 +1045,16 @@ namespace embree
 
 					// push inner node's children to node queue, as well as their node id to the id queue
 					for (int i = 0; i < 8; i++) {
+						// double check this, but I'm pretty sure I have this here in case child node is empty in which case break for loop.
 						if (n8->child(i) == 8) break;
+						
+						// push child onto nodeQueue
 						nodeQueue8.push(n8->child(i));
+						
+						// calculate node id and push to idQueue
 						idQueue.push(tempID * 8 + (i + 1));
 
-						// push leaf node bounds onto queue to access when current node is a leaf node
+						// check if child is a leaf node, if so push leaf node bounds to boundsQueue
 						if ((n8->child(i).type() > 8 && n8->child(i).type() < 16) && n8->child(i).isLeaf() > 0) {	// valid leaf node
 							boundsQueue.push(n8->bounds(i));
 						}
