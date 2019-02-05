@@ -29,15 +29,15 @@
 /********************************************** MY EDITS ****************************************************/
 #include "../../kernels/bvh/bvh.h"
 #include "../../kernels/geometry/trianglev.h"
-#include "C:\Users\evanwaxman\Documents\workspace\embree\kernels\common\accel.h"
+#include "accel.h"
 #include <queue>
 #include <iostream>
 #include <fstream>
-#include "C:\Users\evanwaxman\Documents\workspace\embree\kernels\common\scene_instance.h"
-#include "c:\Users\evanwaxman\Documents\workspace\embree\tutorials\common\tutorial\tutorial_device.h"
-#include "c:\Users\evanwaxman\Documents\workspace\embree\kernels\geometry\triangle.h"
-#include "c:\Users\evanwaxman\Documents\workspace\embree\kernels\geometry\curveNv.h"
-#include "c:\Users\evanwaxman\Documents\workspace\embree\kernels\subdiv\bezier_curve.h"
+#include "scene_instance.h"
+#include "../../tutorials/common/tutorial/tutorial_device.h"
+#include "../geometry/triangle.h"
+#include "../geometry/curveNv.h"
+#include "../subdiv/bezier_curve.h"
 
 //#define GEN_FILES
 /************************************************************************************************************/
@@ -275,8 +275,8 @@ namespace embree
 	std::queue<BBox3fa> boundsQueue;
 
 	// create binary files for the bvh structure, as well as the primitives. (refer to asana for content structure)
-	std::ofstream bvhbin("C:/Users/evanwaxman/Documents/workspace/embree/current_test/bvh.bin", std::ios::out | std::ios::binary);
-	std::ofstream primbin("C:/Users/evanwaxman/Documents/workspace/embree/current_test/prim.bin", std::ios::out | std::ios::binary);
+	std::ofstream bvhbin("/home2/evanwaxman/workspace/embree/current_test/bvh.bin", std::ios::out | std::ios::binary);
+	std::ofstream primbin("/home2/evanwaxman/workspace/embree/current_test/prim.bin", std::ios::out | std::ios::binary);
 
 	// create text files for the bvh structure, as well as the primitives. (refer to asana for content structure)
 	//std::ofstream bvhtxt("C:/Users/evanwaxman/Documents/workspace/embree/bvh.txt");
@@ -290,7 +290,7 @@ namespace embree
 		if (accel->type == AccelData::TY_BVH4) {
 			bvh4 = (BVH4*)accel;
 			BVH4::NodeRef node = bvh4->root;
-			std::cout << "***********************************TY_BVH4*********************************************\n";
+			//std::cout << "***********************************TY_BVH4*********************************************\n";
 
 			// initialize queue with root node and root id
 			nodeQueue4.push(node);
@@ -330,7 +330,7 @@ namespace embree
 
 					// check the geometry type for the leaf node
 					//if (scene->geometries[0]->gtype == 16) {		// GTY_TRIANGLE_MESH
-					if (strcmp(bvh8->primTy->name(), "triangle4") == 0) {
+					if (strcmp(bvh4->primTy->name(), "triangle4") == 0) {
 
 						//std::cout << "GEOM TYPE: " << bvh8->primTy->name() << std::endl;
 						
@@ -417,29 +417,34 @@ namespace embree
 							*******************************************************/
 
 							/***************	FOR BIN FILE	********************/
-							char primarray[13];
+							char primarray[17];
 
-							// write 32-bit node id
-							primarray[3] = tempID & 0xff;
-							primarray[2] = (tempID >> 8) & 0xff;
-							primarray[1] = (tempID >> 16) & 0xff;
-							primarray[0] = (tempID >> 24) & 0xff;
+                                                	// write 64-bit node id
+                                        	        primarray[7] = tempID & 0xff;
+                                	                primarray[6] = (tempID >> 8) & 0xff;
+                        	                        primarray[5] = (tempID >> 16) & 0xff;
+                	                                primarray[4] = (tempID >> 24) & 0xff;
+        	                                        primarray[3] = (tempID >> 32) & 0xff;
+	                                                primarray[2] = (tempID >> 40) & 0xff;
+	                                                primarray[1] = (tempID >> 48) & 0xff;
+	                                                primarray[0] = (tempID >> 56) & 0xff;
+
 
 							// write 8-bit number of primitives in leaf node
-							primarray[4] = tri->size() & 0xff;
+							primarray[8] = tri->size() & 0xff;
 
 							// write 32-bit geometry id
-							primarray[8] = tri->geomID(j) & 0xff;
-							primarray[7] = (tri->geomID(j) >> 8) & 0xff;
-							primarray[6] = (tri->geomID(j) >> 16) & 0xff;
-							primarray[5] = (tri->geomID(j) >> 24) & 0xff;
+							primarray[12] = tri->geomID(j) & 0xff;
+							primarray[11] = (tri->geomID(j) >> 8) & 0xff;
+							primarray[10] = (tri->geomID(j) >> 16) & 0xff;
+							primarray[9] = (tri->geomID(j) >> 24) & 0xff;
 
 							// write 32-bit primitive id
-							primarray[12] = tri->primID(j) & 0xff;
-							primarray[11] = (tri->primID(j) >> 8) & 0xff;
-							primarray[10] = (tri->primID(j) >> 16) & 0xff;
-							primarray[9] = (tri->primID(j) >> 24) & 0xff;
-							primbin.write(primarray, 13);
+							primarray[16] = tri->primID(j) & 0xff;
+							primarray[15] = (tri->primID(j) >> 8) & 0xff;
+							primarray[14] = (tri->primID(j) >> 16) & 0xff;
+							primarray[13] = (tri->primID(j) >> 24) & 0xff;
+							primbin.write(primarray, 17);
 
 
 							// write 9 32-bit float coordinates for the leaf node
@@ -653,7 +658,7 @@ namespace embree
 			bvh8 = (BVH8*)accel;
 			BVH8::NodeRef node = bvh8->root;
 
-			std::cout << "***********************************TY_BVH8*********************************************\n";
+			//std::cout << "***********************************TY_BVH8*********************************************\n";
 
 			// initialize node queue with root node and id queue root id
 			nodeQueue8.push(node);
@@ -782,30 +787,33 @@ namespace embree
 							*******************************************************/
 
 							/***************	FOR BIN FILE	********************/
-							char primarray[13];
+                                                        char primarray[17];
 
-							// write 64-bit node id
-							primarray[3] = tempID & 0xff;
-							primarray[2] = (tempID >> 8) & 0xff;
-							primarray[1] = (tempID >> 16) & 0xff;
-							primarray[0] = (tempID >> 24) & 0xff;
+                                                        // write 64-bit node id
+                                                        primarray[7] = tempID & 0xff;
+                                                        primarray[6] = (tempID >> 8) & 0xff;
+                                                        primarray[5] = (tempID >> 16) & 0xff;
+                                                        primarray[4] = (tempID >> 24) & 0xff;
+                                                        primarray[3] = (tempID >> 32) & 0xff;
+                                                        primarray[2] = (tempID >> 40) & 0xff;
+                                                        primarray[1] = (tempID >> 48) & 0xff;
+                                                        primarray[0] = (tempID >> 56) & 0xff;
 
-							// write 8-bit number of primitives in leaf node
-							primarray[4] = tri->size() & 0xff;
+                                                        // write 8-bit number of primitives in leaf node
+                                                        primarray[8] = tri->size() & 0xff;
 
-							// write 32-bit geometry id
-							primarray[8] = tri->geomID(j) & 0xff;
-							primarray[7] = (tri->geomID(j) >> 8) & 0xff;
-							primarray[6] = (tri->geomID(j) >> 16) & 0xff;
-							primarray[5] = (tri->geomID(j) >> 24) & 0xff;
-							
-							// write 32-bit primitive id
-							primarray[12] = tri->primID(j) & 0xff;
-							primarray[11] = (tri->primID(j) >> 8) & 0xff;
-							primarray[10] = (tri->primID(j) >> 16) & 0xff;
-							primarray[9] = (tri->primID(j) >> 24) & 0xff;
-							primbin.write(primarray, 13);
+                                                        // write 32-bit geometry id
+                                                        primarray[12] = tri->geomID(j) & 0xff;
+                                                        primarray[11] = (tri->geomID(j) >> 8) & 0xff;
+                                                        primarray[10] = (tri->geomID(j) >> 16) & 0xff;
+                                                        primarray[9] = (tri->geomID(j) >> 24) & 0xff;
 
+                                                        // write 32-bit primitive id
+                                                        primarray[16] = tri->primID(j) & 0xff;
+                                                        primarray[15] = (tri->primID(j) >> 8) & 0xff;
+                                                        primarray[14] = (tri->primID(j) >> 16) & 0xff;
+                                                        primarray[13] = (tri->primID(j) >> 24) & 0xff;
+                                                        primbin.write(primarray, 17);
 
 							// write 6 32-bit float coordinates for the leaf node
 							// NOTE: writes most significant float byte first
@@ -998,9 +1006,7 @@ namespace embree
 					for (int i = 0; i < 8; i++) {
 						if (n8->child(i) == 8) break;
 						nodeQueue8.push(n8->child(i));
-
-						/////////////////////////////////////////////////////////////////////////////// CHANGE THIS BACK TO tempID * 8 when doing 8-way BVH
-						idQueue.push(tempID * 4 + (i + 1));
+						idQueue.push(tempID * 8 + (i + 1));
 
 						// push leaf node bounds onto queue to access when current node is a leaf node
 						if ((n8->child(i).type() > 8 && n8->child(i).type() < 16) && n8->child(i).isLeaf() > 0) {	// valid leaf node

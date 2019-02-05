@@ -139,5 +139,5 @@ __forceinline void InitIntersectionContext(struct IntersectContext* context)
   context->userRayExt = NULL;
 }
 
-__declspec(selectany) int hitCount;
-__declspec(selectany) int testCount;
+__attribute__((weak)) int hitCount;
+__attribute__((weak)) int testCount;

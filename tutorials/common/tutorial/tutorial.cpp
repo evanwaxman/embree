@@ -1034,7 +1034,10 @@ namespace embree
 
         displayFunc();
 
+		/*** MY EDIT ***/
 		break;
+		/***************/
+
       }
 
       ImGui_ImplGlfwGL2_Shutdown();
