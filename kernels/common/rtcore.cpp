@@ -39,7 +39,7 @@
 #include "c:\Users\evanwaxman\Documents\workspace\embree\kernels\geometry\curveNv.h"
 #include "c:\Users\evanwaxman\Documents\workspace\embree\kernels\subdiv\bezier_curve.h"
 
-#define GEN_FILES
+//#define GEN_FILES
 /************************************************************************************************************/
 
 

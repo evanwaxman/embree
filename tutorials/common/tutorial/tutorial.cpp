@@ -1033,6 +1033,8 @@ namespace embree
         glfwPollEvents();
 
         displayFunc();
+
+		break;
       }
 
       ImGui_ImplGlfwGL2_Shutdown();

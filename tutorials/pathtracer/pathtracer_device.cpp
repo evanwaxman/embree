@@ -25,8 +25,8 @@
 #include <iostream>
 #include <fstream>
 
-#define GEN_FILES
-#define GEN_RAY_STATS
+//#define GEN_FILES
+//#define GEN_RAY_STATS
 #define RUN_SEQUENTIAL
 /****************************/
 
