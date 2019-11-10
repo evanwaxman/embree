@@ -39,7 +39,7 @@
 #include "../geometry/curveNv.h"
 #include "../subdiv/bezier_curve.h"
 
-//#define GEN_FILES
+#define GEN_FILES
 /************************************************************************************************************/
 
 
@@ -282,14 +282,14 @@ namespace embree
 	 * 	<64-bit node id><8-bit node type (1 for inner node, 2 for leaf node)><write 8-bit number of leaf children (primitives)>
 	 * 	<6 32-bit float coordinates for the leaf node (writes most significant float byte first)>
 	 */
-	std::ofstream bvhbin("/home2/evanwaxman/workspace/embree/current_test/bvh.bin", std::ios::out | std::ios::binary);
+	std::ofstream bvhbin("/home/UFAD/evanwaxman/workspace/my_embree/embree/current_test/bvh.bin", std::ios::out | std::ios::binary);
 	  
 	/* create binary files for the primitives within the bvh.
 	 * Structure of bvhbin file is as follows:
 	 * 	<64-bit node id><8-bit number of primitives in leaf node><32-bit geometry id><32-bit primitive id>
 	 * 	<9 32-bit float coordinates for the leaf node (writes most significant float byte first)>
 	 */
-	std::ofstream primbin("/home2/evanwaxman/workspace/embree/current_test/prim.bin", std::ios::out | std::ios::binary);
+	std::ofstream primbin("/home/UFAD/evanwaxman/workspace/my_embree/embree/current_test/prim.bin", std::ios::out | std::ios::binary);
 
 	/* If txt files are desired instead, uncomment the two lines below and comment out the bin file creation lines.
 	std::ofstream bvhtxt("C:/Users/evanwaxman/Documents/workspace/embree/bvh.txt");
