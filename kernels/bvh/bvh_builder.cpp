@@ -27,8 +27,8 @@ namespace embree
         return createLeaf(prims,set,alloc);
       };
       
-      //settings.branchingFactor = N;
-	  settings.branchingFactor = 4;
+      settings.branchingFactor = N;
+	  //settings.branchingFactor = 4;
 
 	  settings.maxDepth = BVH::maxBuildDepthLeaf;
       return BVHBuilderBinnedSAH::build<NodeRef>
@@ -43,8 +43,8 @@ namespace embree
         return createLeaf(prims,set,alloc);
       };
             
-      //settings.branchingFactor = N;
-	  settings.branchingFactor = 4;
+      settings.branchingFactor = N;
+	  //settings.branchingFactor = 4;
 
 	  settings.maxDepth = BVH::maxBuildDepthLeaf;
       return BVHBuilderBinnedSAH::build<NodeRef>
@@ -58,8 +58,8 @@ namespace embree
         return createLeaf(prims,set,alloc);
       };
 
-      //settings.branchingFactor = N;
-	  settings.branchingFactor = 4;
+      settings.branchingFactor = N;
+	  //settings.branchingFactor = 4;
 	  
 	  settings.maxDepth = BVH::maxBuildDepthLeaf;
       return BVHBuilderBinnedSAH::build<NodeRecordMB>

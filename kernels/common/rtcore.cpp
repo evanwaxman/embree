@@ -282,19 +282,19 @@ namespace embree
 	 * 	<64-bit node id><8-bit node type (1 for inner node, 2 for leaf node)><write 8-bit number of leaf children (primitives)>
 	 * 	<6 32-bit float coordinates for the leaf node (writes most significant float byte first)>
 	 */
-	std::ofstream bvhbin("/home/UFAD/evanwaxman/workspace/my_embree/embree/current_test/bvh.bin", std::ios::out | std::ios::binary);
+	std::ofstream bvhbin("../current_test/bvh.bin", std::ios::out | std::ios::binary);
 	  
 	/* create binary files for the primitives within the bvh.
 	 * Structure of bvhbin file is as follows:
 	 * 	<64-bit node id><8-bit number of primitives in leaf node><32-bit geometry id><32-bit primitive id>
 	 * 	<9 32-bit float coordinates for the leaf node (writes most significant float byte first)>
 	 */
-	std::ofstream primbin("/home/UFAD/evanwaxman/workspace/my_embree/embree/current_test/prim.bin", std::ios::out | std::ios::binary);
+	std::ofstream primbin("../current_test/prim.bin", std::ios::out | std::ios::binary);
 
-	/* If txt files are desired instead, uncomment the two lines below and comment out the bin file creation lines.
-	std::ofstream bvhtxt("C:/Users/evanwaxman/Documents/workspace/embree/bvh.txt");
-	std::ofstream primtxt("C:/Users/evanwaxman/Documents/workspace/embree/primitives.txt");
-	 */
+	/* If txt files are desired instead, uncomment the two lines below and comment out the bin file creation lines. */
+	std::ofstream bvhtxt("../current_test/bvh.txt");
+	std::ofstream primtxt("../current_test/prim.txt");
+    /**/
 
 	// NOTE: the current code only supports scenes with only triangles (for now)
 	if (bvhbin.is_open() && primbin.is_open()) {
@@ -311,7 +311,7 @@ namespace embree
 			BVH4::NodeRef node = bvh4->root;
 			
 			// Print that the scene bvh is a 4-way bvh
-			//std::cout << "***********************************TY_BVH4*********************************************\n";
+			std::cout << "4-WAY BVH" << std::endl;
 
 			// initialize queue with root node and root id
 			nodeQueue4.push(node);
@@ -361,10 +361,10 @@ namespace embree
 						Triangle4* tri = (Triangle4*)tempNode.leaf(num);
 
 						// write leaf node info to bvh file
-						/***************	FOR TXT FILE	********************
+						/***************	FOR TXT FILE	********************/
 						bvhtxt << tempID << " 2 " << tri->size() << " " << b.lower.x << " " << b.lower.y << " " << b.lower.z << " "
 							<< b.upper.x << " " << b.upper.y << " " << b.upper.z << "\n";
-						*******************************************************/
+						/*******************************************************/
 						
 						/***************	FOR BIN FILE	********************/
 						char bvharray[10];
@@ -430,25 +430,25 @@ namespace embree
 						// write primitive info to primitive file
 						for (size_t j = 0; j < tri->size(); j++) {
 
-							/***************	FOR TXT FILE	********************
-							primtxt << tempID << " 1 " << tri->geomID(j) << " " << tri->primID(j) <<
+							/***************	FOR TXT FILE	********************/
+							primtxt << tempID << " " << tri->size() << " " << tri->geomID(j) << " " << tri->primID(j) <<
 								" " << tri->v0.x[j] << " " << tri->v0.y[j] << " " << tri->v0.z[j] <<
 								" " << tri->v0.x[j] - tri->e1.x[j] << " " << tri->v0.y[j] - tri->e1.y[j] << " " << tri->v0.z[j] - tri->e1.z[j] <<
 								" " << tri->v0.x[j] + tri->e2.x[j] << " " << tri->v0.y[j] + tri->e2.y[j] << " " << tri->v0.z[j] + tri->e2.z[j] << std::endl;
-							*******************************************************/
+							/*******************************************************/
 
 							/***************	FOR BIN FILE	********************/
 							char primarray[17];
 
-                                                	// write 64-bit node id
-                                        	        primarray[7] = tempID & 0xff;
-                                	                primarray[6] = (tempID >> 8) & 0xff;
-                        	                        primarray[5] = (tempID >> 16) & 0xff;
-                	                                primarray[4] = (tempID >> 24) & 0xff;
-        	                                        primarray[3] = (tempID >> 32) & 0xff;
-	                                                primarray[2] = (tempID >> 40) & 0xff;
-	                                                primarray[1] = (tempID >> 48) & 0xff;
-	                                                primarray[0] = (tempID >> 56) & 0xff;
+                            // write 64-bit node id
+                            primarray[7] = tempID & 0xff;
+                            primarray[6] = (tempID >> 8) & 0xff;
+                            primarray[5] = (tempID >> 16) & 0xff;
+                            primarray[4] = (tempID >> 24) & 0xff;
+                            primarray[3] = (tempID >> 32) & 0xff;
+                            primarray[2] = (tempID >> 40) & 0xff;
+                            primarray[1] = (tempID >> 48) & 0xff;
+                            primarray[0] = (tempID >> 56) & 0xff;
 
 
 							// write 8-bit number of primitives in leaf node
@@ -586,12 +586,12 @@ namespace embree
 					}
 
 					// write inner node info to bvh file
-					/***************	FOR TXT FILE	********************
+					/***************	FOR TXT FILE	********************/
 					bvhtxt << tempID << " 1 " << numChildren << " " << *std::min_element(lowerX.begin(), lowerX.end()) << " "
 						<< *std::min_element(lowerY.begin(), lowerY.end()) << " " << *std::min_element(lowerZ.begin(), lowerZ.end()) << " "
 						<< *std::max_element(upperX.begin(), upperX.end()) << " " << *std::max_element(upperY.begin(), upperY.end()) << " "
 						<< *std::max_element(upperZ.begin(), upperZ.end()) << "\n";
-					*******************************************************/
+					/*******************************************************/
 
 					/***************	FOR BIN FILE	********************/
 					char bvharray[10];
@@ -663,11 +663,11 @@ namespace embree
 					// push children to queue
 					for (int i = 0; i < 4; i++) {
 						// double check this, but I'm pretty sure I have this here in case child node is empty in which case break for loop.
-						if (n8->child(i) == 8) break;
-						
+						if (n4->child(i) == 8) break;
+
 						// push child to nodeQueue
 						nodeQueue4.push(n4->child(i));
-						
+
 						// calculate child's node id and push to idQueue
 						idQueue.push(tempID * 4 + (i + 1));
 
@@ -695,7 +695,7 @@ namespace embree
 			BVH8::NodeRef node = bvh8->root;
 
 			// print the bvh type
-			//std::cout << "***********************************TY_BVH8*********************************************\n";
+			std::cout << "8-WAY BVH" << std::endl;
 
 			// initialize node queue with root node and id queue root id
 			nodeQueue8.push(node);
@@ -745,10 +745,10 @@ namespace embree
 						Triangle4* tri = (Triangle4*)tempNode.leaf(num);
 						
 						// write leaf node info to bvh file
-						/***************	FOR TXT FILE	********************
+						/***************	FOR TXT FILE	********************/
 						bvhtxt << tempID << " 2 " << tri->size() << " " << b.lower.x << " " << b.lower.y << " " << b.lower.z << " "
 							<< b.upper.x << " " << b.upper.y << " " << b.upper.z << "\n";
-						*******************************************************/
+						/*******************************************************/
 
 						/***************	FOR BIN FILE	********************/
 						char bvharray[10];
@@ -814,41 +814,41 @@ namespace embree
 						// write primitive info to primitive file
 						for (size_t j = 0; j < tri->size(); j++) {
 
-							/***************	FOR TXT FILE	********************
-							primtxt << tempID << " 1 " << tri->geomID(j) << " " << tri->primID(j) <<
+							/***************	FOR TXT FILE	********************/
+							primtxt << tempID << " " << tri->size() << " " << tri->geomID(j) << " " << tri->primID(j) <<
 								" " << tri->v0.x[j] << " " << tri->v0.y[j] << " " << tri->v0.z[j] <<
 								" " << tri->v0.x[j] - tri->e1.x[j] << " " << tri->v0.y[j] - tri->e1.y[j] << " " << tri->v0.z[j] - tri->e1.z[j] <<
 								" " << tri->v0.x[j] + tri->e2.x[j] << " " << tri->v0.y[j] + tri->e2.y[j] << " " << tri->v0.z[j] + tri->e2.z[j] << std::endl;
-							*******************************************************/
+							/*******************************************************/
 
 							/***************	FOR BIN FILE	********************/
-                                                        char primarray[17];
+                            char primarray[17];
 
-                                                        // write 64-bit node id
-                                                        primarray[7] = tempID & 0xff;
-                                                        primarray[6] = (tempID >> 8) & 0xff;
-                                                        primarray[5] = (tempID >> 16) & 0xff;
-                                                        primarray[4] = (tempID >> 24) & 0xff;
-                                                        primarray[3] = (tempID >> 32) & 0xff;
-                                                        primarray[2] = (tempID >> 40) & 0xff;
-                                                        primarray[1] = (tempID >> 48) & 0xff;
-                                                        primarray[0] = (tempID >> 56) & 0xff;
+                            // write 64-bit node id
+                            primarray[7] = tempID & 0xff;
+                            primarray[6] = (tempID >> 8) & 0xff;
+                            primarray[5] = (tempID >> 16) & 0xff;
+                            primarray[4] = (tempID >> 24) & 0xff;
+                            primarray[3] = (tempID >> 32) & 0xff;
+                            primarray[2] = (tempID >> 40) & 0xff;
+                            primarray[1] = (tempID >> 48) & 0xff;
+                            primarray[0] = (tempID >> 56) & 0xff;
 
-                                                        // write 8-bit number of primitives in leaf node
-                                                        primarray[8] = tri->size() & 0xff;
+                            // write 8-bit number of primitives in leaf node
+                            primarray[8] = tri->size() & 0xff;
 
-                                                        // write 32-bit geometry id
-                                                        primarray[12] = tri->geomID(j) & 0xff;
-                                                        primarray[11] = (tri->geomID(j) >> 8) & 0xff;
-                                                        primarray[10] = (tri->geomID(j) >> 16) & 0xff;
-                                                        primarray[9] = (tri->geomID(j) >> 24) & 0xff;
+                            // write 32-bit geometry id
+                            primarray[12] = tri->geomID(j) & 0xff;
+                            primarray[11] = (tri->geomID(j) >> 8) & 0xff;
+                            primarray[10] = (tri->geomID(j) >> 16) & 0xff;
+                            primarray[9] = (tri->geomID(j) >> 24) & 0xff;
 
-                                                        // write 32-bit primitive id
-                                                        primarray[16] = tri->primID(j) & 0xff;
-                                                        primarray[15] = (tri->primID(j) >> 8) & 0xff;
-                                                        primarray[14] = (tri->primID(j) >> 16) & 0xff;
-                                                        primarray[13] = (tri->primID(j) >> 24) & 0xff;
-                                                        primbin.write(primarray, 17);
+                            // write 32-bit primitive id
+                            primarray[16] = tri->primID(j) & 0xff;
+                            primarray[15] = (tri->primID(j) >> 8) & 0xff;
+                            primarray[14] = (tri->primID(j) >> 16) & 0xff;
+                            primarray[13] = (tri->primID(j) >> 24) & 0xff;
+                            primbin.write(primarray, 17);
 
 							// write 6 32-bit float coordinates for the leaf node
 							// NOTE: writes most significant float byte first
@@ -969,12 +969,12 @@ namespace embree
 					}
 
 					// write inner node info to bvh file
-					/***************	FOR TXT FILE	********************
+					/***************	FOR TXT FILE	********************/
 					bvhtxt << tempID << " 1 " << numChildren << " " << *std::min_element(lowerX.begin(), lowerX.end()) << " "
 						<< *std::min_element(lowerY.begin(), lowerY.end()) << " " << *std::min_element(lowerZ.begin(), lowerZ.end()) << " "
 						<< *std::max_element(upperX.begin(), upperX.end()) << " " << *std::max_element(upperY.begin(), upperY.end()) << " "
 						<< *std::max_element(upperZ.begin(), upperZ.end()) << "\n";
-					*******************************************************/
+					/*******************************************************/
 
 					/***************	FOR BIN FILE	********************/
 					char bvharray[10];
@@ -1081,8 +1081,8 @@ namespace embree
 	}
 	bvhbin.close();
 	primbin.close();
-	//bvhtxt.close();
-	//primtxt.close();
+	bvhtxt.close();
+	primtxt.close();
 #endif
 	/***********************************************************************************/
 

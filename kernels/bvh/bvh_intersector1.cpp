@@ -42,7 +42,7 @@
 #include <fstream>
 #include "../../tutorials/common/core/ray.h"
 
-//#define GEN_RAY_STATS
+//#define GEN_FILES
 /****************************/
 
 namespace embree
@@ -61,9 +61,9 @@ namespace embree
 	  int rciTestCount = 0;
 	  int rciHit = 0;
 
-#ifdef GEN_RAY_STATS
+#ifdef GEN_FILES
 	  std::ofstream rayStats;
-#endif // GEN_RAY_STATS
+#endif // GEN_FILES
 	  /****************************/
 
       /* perform per ray precalculations required by the primitive intersector */
@@ -166,11 +166,11 @@ namespace embree
 
 
 	  /**********MY EDITS**********/
-#ifdef GEN_RAY_STATS
-	  rayStats.open("/home/UFAD/evanwaxman/workspace/my_embree/embree/ray_stats/rayStats.txt", std::ios_base::app);
+#ifdef GEN_FILES
+	  rayStats.open("../../ray_stats/rayStats.txt", std::ios_base::app);
 	  rayStats <<  nodeCount << ", " << rtiTestCount << ", " << rtiHit << ", " << rciTestCount << ", " << rciHit << std::endl;
 	  rayStats.close();
-#endif // GEN_RAY_STATS
+#endif // GEN_FILES
 	  /****************************/
     }
 

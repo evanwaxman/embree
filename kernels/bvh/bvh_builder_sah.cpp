@@ -112,7 +112,7 @@ namespace embree
                       const size_t mode, bool primrefarrayalloc = false)
         : bvh(bvh), scene(scene), mesh(nullptr), prims(scene->device,0),
           settings(sahBlockSize, minLeafSize, min(maxLeafSize,Primitive::max_size()*BVH::maxLeafBlocks), travCost, intCost, DEFAULT_SINGLE_THREAD_THRESHOLD), primrefarrayalloc(primrefarrayalloc) {}
-	  */
+	 */
 
 	  /*** MY EDITS ***/
 	  BVHNBuilderSAH (BVH* bvh, Scene* scene, const size_t sahBlockSize, const float intCost, const size_t minLeafSize, const size_t maxLeafSize,

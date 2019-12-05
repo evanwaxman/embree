@@ -25,9 +25,8 @@
 #include <iostream>
 #include <fstream>
 
-//#define GEN_FILES
-//#define GEN_RAY_STATS
-//#define RUN_SEQUENTIAL
+#define GEN_FILES
+#define RUN_SEQUENTIAL
 /****************************/
 
 namespace embree {
@@ -50,12 +49,25 @@ std::ofstream bounce4IntersectionBin;
 std::ofstream bounce5IntersectionBin;
 std::ofstream bounce6IntersectionBin;
 std::ofstream bounce7IntersectionBin;
+
+std::ofstream primaryRayTxt;
+std::ofstream bounce1RayTxt;
+std::ofstream bounce2RayTxt;
+std::ofstream bounce3RayTxt;
+std::ofstream bounce4RayTxt;
+std::ofstream bounce5RayTxt;
+std::ofstream bounce6RayTxt;
+std::ofstream bounce7RayTxt;
+std::ofstream primaryIntersectionTxt;
+std::ofstream bounce1IntersectionTxt;
+std::ofstream bounce2IntersectionTxt;
+std::ofstream bounce3IntersectionTxt;
+std::ofstream bounce4IntersectionTxt;
+std::ofstream bounce5IntersectionTxt;
+std::ofstream bounce6IntersectionTxt;
+std::ofstream bounce7IntersectionTxt;
+//std::ofstream rayStats;
 #endif // GEN_FILES
-
-#ifdef GEN_RAY_STATS
-std::ofstream rayStats;
-#endif // GEN_RAY_STATS
-
 
 unsigned int myRayID = 0;
 //std::chrono::duration<double> intersectTime = std::chrono::duration < double>(0.0);
@@ -1656,17 +1668,19 @@ Vec3fa renderPixelFunction(float x, float y, RandomSampler& sampler, const ISPCC
 
 	/***************************************MY EDITS**************************************/
 	ray.id = myRayID;
-#ifdef GEN_RAY_STATS
-
-	rayStats.open("/home/UFAD/evanwaxman/workspace/my_embree/embree/ray_stats/rayStats.txt", std::ios_base::app);
-	rayStats << ray.id << ", " << i << ", ";
-	rayStats.close();
-
-#endif // GEN_RAY_STATS
+//#ifdef GEN_FILES
+//
+//	rayStats.open("../../ray_stats/rayStats.txt", std::ios_base::app);
+//	rayStats << ray.id << ", " << i << ", ";
+//	rayStats.close();
+//
+//#endif // GEN_FILES
 
 #ifdef GEN_FILES
 	/***WRITE RAYS TO BIN FILES HERE***/
 	if (i == 0) {
+        primaryRayTxt << ray.id << " " << ray.org.x << " " << ray.org.y << " " << ray.org.z << " " << ray.dir.x << " " << ray.dir.y << " " << ray.dir.z << " " << std::endl;
+        
 		// write 32-bit ray id
 		rayarray[3] = ray.id & 0xff;
 		rayarray[2] = (ray.id >> 8) & 0xff;
@@ -1713,6 +1727,8 @@ Vec3fa renderPixelFunction(float x, float y, RandomSampler& sampler, const ISPCC
 		primaryRayBin.write(&tempChar[0], 1);
 	}
 	else if (i == 1) {
+        bounce1RayTxt << ray.id << " " << ray.org.x << " " << ray.org.y << " " << ray.org.z << " " << ray.dir.x << " " << ray.dir.y << " " << ray.dir.z << " " << std::endl;
+        
 		// write 32-bit ray id
 		rayarray[3] = ray.id & 0xff;
 		rayarray[2] = (ray.id >> 8) & 0xff;
@@ -1759,6 +1775,8 @@ Vec3fa renderPixelFunction(float x, float y, RandomSampler& sampler, const ISPCC
 		bounce1RayBin.write(&tempChar[0], 1);
 	}
 	else if (i == 2) {
+        bounce2RayTxt << ray.id << " " << ray.org.x << " " << ray.org.y << " " << ray.org.z << " " << ray.dir.x << " " << ray.dir.y << " " << ray.dir.z << " " << std::endl;
+        
 		// write 32-bit ray id
 		rayarray[3] = ray.id & 0xff;
 		rayarray[2] = (ray.id >> 8) & 0xff;
@@ -1805,6 +1823,8 @@ Vec3fa renderPixelFunction(float x, float y, RandomSampler& sampler, const ISPCC
 		bounce2RayBin.write(&tempChar[0], 1);
 	}
 	else if (i == 3) {
+        bounce3RayTxt << ray.id << " " << ray.org.x << " " << ray.org.y << " " << ray.org.z << " " << ray.dir.x << " " << ray.dir.y << " " << ray.dir.z << " " << std::endl;
+        
 		// write 32-bit ray id
 		rayarray[3] = ray.id & 0xff;
 		rayarray[2] = (ray.id >> 8) & 0xff;
@@ -1851,6 +1871,8 @@ Vec3fa renderPixelFunction(float x, float y, RandomSampler& sampler, const ISPCC
 		bounce3RayBin.write(&tempChar[0], 1);
 	}
 	else if (i == 4) {
+        bounce4RayTxt << ray.id << " " << ray.org.x << " " << ray.org.y << " " << ray.org.z << " " << ray.dir.x << " " << ray.dir.y << " " << ray.dir.z << " " << std::endl;
+        
 		// write 32-bit ray id
 		rayarray[3] = ray.id & 0xff;
 		rayarray[2] = (ray.id >> 8) & 0xff;
@@ -1897,6 +1919,8 @@ Vec3fa renderPixelFunction(float x, float y, RandomSampler& sampler, const ISPCC
 		bounce4RayBin.write(&tempChar[0], 1);
 	}
 	else if (i == 5) {
+        bounce5RayTxt << ray.id << " " << ray.org.x << " " << ray.org.y << " " << ray.org.z << " " << ray.dir.x << " " << ray.dir.y << " " << ray.dir.z << " " << std::endl;
+        
 		// write 32-bit ray id
 		rayarray[3] = ray.id & 0xff;
 		rayarray[2] = (ray.id >> 8) & 0xff;
@@ -1943,6 +1967,8 @@ Vec3fa renderPixelFunction(float x, float y, RandomSampler& sampler, const ISPCC
 		bounce5RayBin.write(&tempChar[0], 1);
 	}
 	else if (i == 6) {
+        bounce6RayTxt << ray.id << " " << ray.org.x << " " << ray.org.y << " " << ray.org.z << " " << ray.dir.x << " " << ray.dir.y << " " << ray.dir.z << " " << std::endl;
+        
 		// write 32-bit ray id
 		rayarray[3] = ray.id & 0xff;
 		rayarray[2] = (ray.id >> 8) & 0xff;
@@ -1989,6 +2015,8 @@ Vec3fa renderPixelFunction(float x, float y, RandomSampler& sampler, const ISPCC
 		bounce6RayBin.write(&tempChar[0], 1);
 	}
 	else if (i == 7) {
+        bounce7RayTxt << ray.id << " " << ray.org.x << " " << ray.org.y << " " << ray.org.z << " " << ray.dir.x << " " << ray.dir.y << " " << ray.dir.z << " " << std::endl;
+        
 		// write 32-bit ray id
 		rayarray[3] = ray.id & 0xff;
 		rayarray[2] = (ray.id >> 8) & 0xff;
@@ -2043,6 +2071,8 @@ Vec3fa renderPixelFunction(float x, float y, RandomSampler& sampler, const ISPCC
 #ifdef GEN_FILES
 	/***WRITE INTERSECTIONS TO BIN FILES HERE***/
 	if (i == 0) {
+        primaryIntersectionTxt << ray.id << " " << ray.geomID << " " << ray.primID << " " << ray.tfar << " " << std::endl;
+        
 		// write 32-bit ray id
 		intersectarray[3] = ray.id & 0xff;
 		intersectarray[2] = (ray.id >> 8) & 0xff;
@@ -2073,6 +2103,8 @@ Vec3fa renderPixelFunction(float x, float y, RandomSampler& sampler, const ISPCC
 		primaryIntersectionBin.write(&tempChar[0], 1);
 	}
 	else if (i == 1) {
+        bounce1IntersectionTxt << ray.id << " " << ray.geomID << " " << ray.primID << " " << ray.tfar << " " << std::endl;
+        
 		// write 32-bit ray id
 		intersectarray[3] = ray.id & 0xff;
 		intersectarray[2] = (ray.id >> 8) & 0xff;
@@ -2103,6 +2135,8 @@ Vec3fa renderPixelFunction(float x, float y, RandomSampler& sampler, const ISPCC
 		bounce1IntersectionBin.write(&tempChar[0], 1);
 	}
 	else if (i == 2) {
+        bounce2IntersectionTxt << ray.id << " " << ray.geomID << " " << ray.primID << " " << ray.tfar << " " << std::endl;
+        
 		// write 32-bit ray id
 		intersectarray[3] = ray.id & 0xff;
 		intersectarray[2] = (ray.id >> 8) & 0xff;
@@ -2133,6 +2167,8 @@ Vec3fa renderPixelFunction(float x, float y, RandomSampler& sampler, const ISPCC
 		bounce2IntersectionBin.write(&tempChar[0], 1);
 	}
 	else if (i == 3) {
+        bounce3IntersectionTxt << ray.id << " " << ray.geomID << " " << ray.primID << " " << ray.tfar << " " << std::endl;
+        
 		// write 32-bit ray id
 		intersectarray[3] = ray.id & 0xff;
 		intersectarray[2] = (ray.id >> 8) & 0xff;
@@ -2163,6 +2199,8 @@ Vec3fa renderPixelFunction(float x, float y, RandomSampler& sampler, const ISPCC
 		bounce3IntersectionBin.write(&tempChar[0], 1);
 	}
 	else if (i == 4) {
+        bounce4IntersectionTxt << ray.id << " " << ray.geomID << " " << ray.primID << " " << ray.tfar << " " << std::endl;
+        
 		// write 32-bit ray id
 		intersectarray[3] = ray.id & 0xff;
 		intersectarray[2] = (ray.id >> 8) & 0xff;
@@ -2193,6 +2231,8 @@ Vec3fa renderPixelFunction(float x, float y, RandomSampler& sampler, const ISPCC
 		bounce4IntersectionBin.write(&tempChar[0], 1);
 	}
 	else if (i == 5) {
+        bounce5IntersectionTxt << ray.id << " " << ray.geomID << " " << ray.primID << " " << ray.tfar << " " << std::endl;
+        
 		// write 32-bit ray id
 		intersectarray[3] = ray.id & 0xff;
 		intersectarray[2] = (ray.id >> 8) & 0xff;
@@ -2223,6 +2263,8 @@ Vec3fa renderPixelFunction(float x, float y, RandomSampler& sampler, const ISPCC
 		bounce5IntersectionBin.write(&tempChar[0], 1);
 	}
 	else if (i == 6) {
+        bounce6IntersectionTxt << ray.id << " " << ray.geomID << " " << ray.primID << " " << ray.tfar << " " << std::endl;
+        
 		// write 32-bit ray id
 		intersectarray[3] = ray.id & 0xff;
 		intersectarray[2] = (ray.id >> 8) & 0xff;
@@ -2253,6 +2295,8 @@ Vec3fa renderPixelFunction(float x, float y, RandomSampler& sampler, const ISPCC
 		bounce6IntersectionBin.write(&tempChar[0], 1);
 	}
 	else if (i == 7) {
+        bounce7IntersectionTxt << ray.id << " " << ray.geomID << " " << ray.primID << " " << ray.tfar << " " << std::endl;
+        
 		// write 32-bit ray id
 		intersectarray[3] = ray.id & 0xff;
 		intersectarray[2] = (ray.id >> 8) & 0xff;
@@ -2570,22 +2614,39 @@ extern "C" void device_render (int* pixels,
 
   // open raybin file, where new data is appended to the end of file
 #ifdef GEN_FILES
-  primaryRayBin.open("/home/UFAD/evanwaxman/workspace/my_embree/embree/current_test/primaryRay.bin", std::ios::out | std::ios::binary);
-  bounce1RayBin.open("/home/UFAD/evanwaxman/workspace/my_embree/embree/current_test/bounce1Ray.bin", std::ios::out | std::ios::binary);
-  bounce2RayBin.open("/home/UFAD/evanwaxman/workspace/my_embree/embree/current_test/bounce2Ray.bin", std::ios::out | std::ios::binary);
-  bounce3RayBin.open("/home/UFAD/evanwaxman/workspace/my_embree/embree/current_test/bounce3Ray.bin", std::ios::out | std::ios::binary);
-  bounce4RayBin.open("/home/UFAD/evanwaxman/workspace/my_embree/embree/current_test/bounce4Ray.bin", std::ios::out | std::ios::binary);
-  bounce5RayBin.open("/home/UFAD/evanwaxman/workspace/my_embree/embree/current_test/bounce5Ray.bin", std::ios::out | std::ios::binary);
-  bounce6RayBin.open("/home/UFAD/evanwaxman/workspace/my_embree/embree/current_test/bounce6Ray.bin", std::ios::out | std::ios::binary);
-  bounce7RayBin.open("/home/UFAD/evanwaxman/workspace/my_embree/embree/current_test/bounce7Ray.bin", std::ios::out | std::ios::binary);
-  primaryIntersectionBin.open("/home/UFAD/evanwaxman/workspace/my_embree/embree/current_test/primaryIntersection.bin", std::ios::out | std::ios::binary);
-  bounce1IntersectionBin.open("/home/UFAD/evanwaxman/workspace/my_embree/embree/current_test/bounce1Intersection.bin", std::ios::out | std::ios::binary);
-  bounce2IntersectionBin.open("/home/UFAD/evanwaxman/workspace/my_embree/embree/current_test/bounce2Intersection.bin", std::ios::out | std::ios::binary);
-  bounce3IntersectionBin.open("/home/UFAD/evanwaxman/workspace/my_embree/embree/current_test/bounce3Intersection.bin", std::ios::out | std::ios::binary);
-  bounce4IntersectionBin.open("/home/UFAD/evanwaxman/workspace/my_embree/embree/current_test/bounce4Intersection.bin", std::ios::out | std::ios::binary);
-  bounce5IntersectionBin.open("/home/UFAD/evanwaxman/workspace/my_embree/embree/current_test/bounce5Intersection.bin", std::ios::out | std::ios::binary);
-  bounce6IntersectionBin.open("/home/UFAD/evanwaxman/workspace/my_embree/embree/current_test/bounce6Intersection.bin", std::ios::out | std::ios::binary);
-  bounce7IntersectionBin.open("/home/UFAD/evanwaxman/workspace/my_embree/embree/current_test/bounce7Intersection.bin", std::ios::out | std::ios::binary);
+  primaryRayBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/primaryRay.bin", std::ios::out | std::ios::binary);
+  bounce1RayBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce1Ray.bin", std::ios::out | std::ios::binary);
+  bounce2RayBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce2Ray.bin", std::ios::out | std::ios::binary);
+  bounce3RayBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce3Ray.bin", std::ios::out | std::ios::binary);
+  bounce4RayBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce4Ray.bin", std::ios::out | std::ios::binary);
+  bounce5RayBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce5Ray.bin", std::ios::out | std::ios::binary);
+  bounce6RayBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce6Ray.bin", std::ios::out | std::ios::binary);
+  bounce7RayBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce7Ray.bin", std::ios::out | std::ios::binary);
+  primaryIntersectionBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/primaryIntersection.bin", std::ios::out | std::ios::binary);
+  bounce1IntersectionBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce1Intersection.bin", std::ios::out | std::ios::binary);
+  bounce2IntersectionBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce2Intersection.bin", std::ios::out | std::ios::binary);
+  bounce3IntersectionBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce3Intersection.bin", std::ios::out | std::ios::binary);
+  bounce4IntersectionBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce4Intersection.bin", std::ios::out | std::ios::binary);
+  bounce5IntersectionBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce5Intersection.bin", std::ios::out | std::ios::binary);
+  bounce6IntersectionBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce6Intersection.bin", std::ios::out | std::ios::binary);
+  bounce7IntersectionBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce7Intersection.bin", std::ios::out | std::ios::binary);
+    
+  primaryRayTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/primaryRay.txt", std::ios::out);
+  bounce1RayTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce1Ray.txt", std::ios::out);
+  bounce2RayTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce2Ray.txt", std::ios::out);
+  bounce3RayTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce3Ray.txt", std::ios::out);
+  bounce4RayTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce4Ray.txt", std::ios::out);
+  bounce5RayTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce5Ray.txt", std::ios::out);
+  bounce6RayTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce6Ray.txt", std::ios::out);
+  bounce7RayTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce7Ray.txt", std::ios::out);
+  primaryIntersectionTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/primaryIntersection.txt", std::ios::out);
+  bounce1IntersectionTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce1Intersection.txt", std::ios::out);
+  bounce2IntersectionTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce2Intersection.txt", std::ios::out);
+  bounce3IntersectionTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce3Intersection.txt", std::ios::out);
+  bounce4IntersectionTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce4Intersection.txt", std::ios::out);
+  bounce5IntersectionTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce5Intersection.txt", std::ios::out);
+  bounce6IntersectionTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce6Intersection.txt", std::ios::out);
+  bounce7IntersectionTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce7Intersection.txt", std::ios::out);
 #endif
 
 #ifdef RUN_SEQUENTIAL
@@ -2616,6 +2677,23 @@ extern "C" void device_render (int* pixels,
   bounce5IntersectionBin.close();
   bounce6IntersectionBin.close();
   bounce7IntersectionBin.close();
+    
+  primaryRayTxt.close();
+  bounce1RayTxt.close();
+  bounce2RayTxt.close();
+  bounce3RayTxt.close();
+  bounce4RayTxt.close();
+  bounce5RayTxt.close();
+  bounce6RayTxt.close();
+  bounce7RayTxt.close();
+  primaryIntersectionTxt.close();
+  bounce1IntersectionTxt.close();
+  bounce2IntersectionTxt.close();
+  bounce3IntersectionTxt.close();
+  bounce4IntersectionTxt.close();
+  bounce5IntersectionTxt.close();
+  bounce6IntersectionTxt.close();
+  bounce7IntersectionTxt.close();
 #endif
   std::cout << "FRAME END" << std::endl;
   std::cout << "FILES GENERATED" << std::endl;
