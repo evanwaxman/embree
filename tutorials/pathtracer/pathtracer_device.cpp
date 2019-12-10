@@ -2614,39 +2614,39 @@ extern "C" void device_render (int* pixels,
 
   // open raybin file, where new data is appended to the end of file
 #ifdef GEN_FILES
-  primaryRayBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/primaryRay.bin", std::ios::out | std::ios::binary);
-  bounce1RayBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce1Ray.bin", std::ios::out | std::ios::binary);
-  bounce2RayBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce2Ray.bin", std::ios::out | std::ios::binary);
-  bounce3RayBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce3Ray.bin", std::ios::out | std::ios::binary);
-  bounce4RayBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce4Ray.bin", std::ios::out | std::ios::binary);
-  bounce5RayBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce5Ray.bin", std::ios::out | std::ios::binary);
-  bounce6RayBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce6Ray.bin", std::ios::out | std::ios::binary);
-  bounce7RayBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce7Ray.bin", std::ios::out | std::ios::binary);
-  primaryIntersectionBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/primaryIntersection.bin", std::ios::out | std::ios::binary);
-  bounce1IntersectionBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce1Intersection.bin", std::ios::out | std::ios::binary);
-  bounce2IntersectionBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce2Intersection.bin", std::ios::out | std::ios::binary);
-  bounce3IntersectionBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce3Intersection.bin", std::ios::out | std::ios::binary);
-  bounce4IntersectionBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce4Intersection.bin", std::ios::out | std::ios::binary);
-  bounce5IntersectionBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce5Intersection.bin", std::ios::out | std::ios::binary);
-  bounce6IntersectionBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce6Intersection.bin", std::ios::out | std::ios::binary);
-  bounce7IntersectionBin.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce7Intersection.bin", std::ios::out | std::ios::binary);
+  primaryRayBin.open("../ray_stats/primaryRay.bin", std::ios::out | std::ios::binary);
+  bounce1RayBin.open("../ray_stats/bounce1Ray.bin", std::ios::out | std::ios::binary);
+  bounce2RayBin.open("../ray_stats/bounce2Ray.bin", std::ios::out | std::ios::binary);
+  bounce3RayBin.open("../ray_stats/bounce3Ray.bin", std::ios::out | std::ios::binary);
+  bounce4RayBin.open("../ray_stats/bounce4Ray.bin", std::ios::out | std::ios::binary);
+  bounce5RayBin.open("../ray_stats/bounce5Ray.bin", std::ios::out | std::ios::binary);
+  bounce6RayBin.open("../ray_stats/bounce6Ray.bin", std::ios::out | std::ios::binary);
+  bounce7RayBin.open("../ray_stats/bounce7Ray.bin", std::ios::out | std::ios::binary);
+  primaryIntersectionBin.open("../ray_stats/primaryIntersection.bin", std::ios::out | std::ios::binary);
+  bounce1IntersectionBin.open("../ray_stats/bounce1Intersection.bin", std::ios::out | std::ios::binary);
+  bounce2IntersectionBin.open("../ray_stats/bounce2Intersection.bin", std::ios::out | std::ios::binary);
+  bounce3IntersectionBin.open("../ray_stats/bounce3Intersection.bin", std::ios::out | std::ios::binary);
+  bounce4IntersectionBin.open("../ray_stats/bounce4Intersection.bin", std::ios::out | std::ios::binary);
+  bounce5IntersectionBin.open("../ray_stats/bounce5Intersection.bin", std::ios::out | std::ios::binary);
+  bounce6IntersectionBin.open("../ray_stats/bounce6Intersection.bin", std::ios::out | std::ios::binary);
+  bounce7IntersectionBin.open("../ray_stats/bounce7Intersection.bin", std::ios::out | std::ios::binary);
     
-  primaryRayTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/primaryRay.txt", std::ios::out);
-  bounce1RayTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce1Ray.txt", std::ios::out);
-  bounce2RayTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce2Ray.txt", std::ios::out);
-  bounce3RayTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce3Ray.txt", std::ios::out);
-  bounce4RayTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce4Ray.txt", std::ios::out);
-  bounce5RayTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce5Ray.txt", std::ios::out);
-  bounce6RayTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce6Ray.txt", std::ios::out);
-  bounce7RayTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce7Ray.txt", std::ios::out);
-  primaryIntersectionTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/primaryIntersection.txt", std::ios::out);
-  bounce1IntersectionTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce1Intersection.txt", std::ios::out);
-  bounce2IntersectionTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce2Intersection.txt", std::ios::out);
-  bounce3IntersectionTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce3Intersection.txt", std::ios::out);
-  bounce4IntersectionTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce4Intersection.txt", std::ios::out);
-  bounce5IntersectionTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce5Intersection.txt", std::ios::out);
-  bounce6IntersectionTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce6Intersection.txt", std::ios::out);
-  bounce7IntersectionTxt.open("/Users/evanwaxman/Documents/workspace/research/raytracing/embree/embree/ray_stats/bounce7Intersection.txt", std::ios::out);
+  primaryRayTxt.open("../ray_stats/primaryRay.txt", std::ios::out);
+  bounce1RayTxt.open("../ray_stats/bounce1Ray.txt", std::ios::out);
+  bounce2RayTxt.open("../ray_stats/bounce2Ray.txt", std::ios::out);
+  bounce3RayTxt.open("../ray_stats/bounce3Ray.txt", std::ios::out);
+  bounce4RayTxt.open("../ray_stats/bounce4Ray.txt", std::ios::out);
+  bounce5RayTxt.open("../ray_stats/bounce5Ray.txt", std::ios::out);
+  bounce6RayTxt.open("../ray_stats/bounce6Ray.txt", std::ios::out);
+  bounce7RayTxt.open("../ray_stats/bounce7Ray.txt", std::ios::out);
+  primaryIntersectionTxt.open("../ray_stats/primaryIntersection.txt", std::ios::out);
+  bounce1IntersectionTxt.open("../ray_stats/bounce1Intersection.txt", std::ios::out);
+  bounce2IntersectionTxt.open("../ray_stats/bounce2Intersection.txt", std::ios::out);
+  bounce3IntersectionTxt.open("../ray_stats/bounce3Intersection.txt", std::ios::out);
+  bounce4IntersectionTxt.open("../ray_stats/bounce4Intersection.txt", std::ios::out);
+  bounce5IntersectionTxt.open("../ray_stats/bounce5Intersection.txt", std::ios::out);
+  bounce6IntersectionTxt.open("../ray_stats/bounce6Intersection.txt", std::ios::out);
+  bounce7IntersectionTxt.open("../ray_stats/bounce7Intersection.txt", std::ios::out);
 #endif
 
 #ifdef RUN_SEQUENTIAL
