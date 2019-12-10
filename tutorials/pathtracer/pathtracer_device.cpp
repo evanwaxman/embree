@@ -1668,13 +1668,6 @@ Vec3fa renderPixelFunction(float x, float y, RandomSampler& sampler, const ISPCC
 
 	/***************************************MY EDITS**************************************/
 	ray.id = myRayID;
-//#ifdef GEN_FILES
-//
-//	rayStats.open("../../ray_stats/rayStats.txt", std::ios_base::app);
-//	rayStats << ray.id << ", " << i << ", ";
-//	rayStats.close();
-//
-//#endif // GEN_FILES
 
 #ifdef GEN_FILES
 	/***WRITE RAYS TO BIN FILES HERE***/
@@ -2614,39 +2607,39 @@ extern "C" void device_render (int* pixels,
 
   // open raybin file, where new data is appended to the end of file
 #ifdef GEN_FILES
-  primaryRayBin.open("../ray_stats/primaryRay.bin", std::ios::out | std::ios::binary);
-  bounce1RayBin.open("../ray_stats/bounce1Ray.bin", std::ios::out | std::ios::binary);
-  bounce2RayBin.open("../ray_stats/bounce2Ray.bin", std::ios::out | std::ios::binary);
-  bounce3RayBin.open("../ray_stats/bounce3Ray.bin", std::ios::out | std::ios::binary);
-  bounce4RayBin.open("../ray_stats/bounce4Ray.bin", std::ios::out | std::ios::binary);
-  bounce5RayBin.open("../ray_stats/bounce5Ray.bin", std::ios::out | std::ios::binary);
-  bounce6RayBin.open("../ray_stats/bounce6Ray.bin", std::ios::out | std::ios::binary);
-  bounce7RayBin.open("../ray_stats/bounce7Ray.bin", std::ios::out | std::ios::binary);
-  primaryIntersectionBin.open("../ray_stats/primaryIntersection.bin", std::ios::out | std::ios::binary);
-  bounce1IntersectionBin.open("../ray_stats/bounce1Intersection.bin", std::ios::out | std::ios::binary);
-  bounce2IntersectionBin.open("../ray_stats/bounce2Intersection.bin", std::ios::out | std::ios::binary);
-  bounce3IntersectionBin.open("../ray_stats/bounce3Intersection.bin", std::ios::out | std::ios::binary);
-  bounce4IntersectionBin.open("../ray_stats/bounce4Intersection.bin", std::ios::out | std::ios::binary);
-  bounce5IntersectionBin.open("../ray_stats/bounce5Intersection.bin", std::ios::out | std::ios::binary);
-  bounce6IntersectionBin.open("../ray_stats/bounce6Intersection.bin", std::ios::out | std::ios::binary);
-  bounce7IntersectionBin.open("../ray_stats/bounce7Intersection.bin", std::ios::out | std::ios::binary);
+  primaryRayBin.open("../generated_files/primaryRay.bin", std::ios::out | std::ios::binary);
+  bounce1RayBin.open("../generated_files/bounce1Ray.bin", std::ios::out | std::ios::binary);
+  bounce2RayBin.open("../generated_files/bounce2Ray.bin", std::ios::out | std::ios::binary);
+  bounce3RayBin.open("../generated_files/bounce3Ray.bin", std::ios::out | std::ios::binary);
+  bounce4RayBin.open("../generated_files/bounce4Ray.bin", std::ios::out | std::ios::binary);
+  bounce5RayBin.open("../generated_files/bounce5Ray.bin", std::ios::out | std::ios::binary);
+  bounce6RayBin.open("../generated_files/bounce6Ray.bin", std::ios::out | std::ios::binary);
+  bounce7RayBin.open("../generated_files/bounce7Ray.bin", std::ios::out | std::ios::binary);
+  primaryIntersectionBin.open("../generated_files/primaryIntersection.bin", std::ios::out | std::ios::binary);
+  bounce1IntersectionBin.open("../generated_files/bounce1Intersection.bin", std::ios::out | std::ios::binary);
+  bounce2IntersectionBin.open("../generated_files/bounce2Intersection.bin", std::ios::out | std::ios::binary);
+  bounce3IntersectionBin.open("../generated_files/bounce3Intersection.bin", std::ios::out | std::ios::binary);
+  bounce4IntersectionBin.open("../generated_files/bounce4Intersection.bin", std::ios::out | std::ios::binary);
+  bounce5IntersectionBin.open("../generated_files/bounce5Intersection.bin", std::ios::out | std::ios::binary);
+  bounce6IntersectionBin.open("../generated_files/bounce6Intersection.bin", std::ios::out | std::ios::binary);
+  bounce7IntersectionBin.open("../generated_files/bounce7Intersection.bin", std::ios::out | std::ios::binary);
     
-  primaryRayTxt.open("../ray_stats/primaryRay.txt", std::ios::out);
-  bounce1RayTxt.open("../ray_stats/bounce1Ray.txt", std::ios::out);
-  bounce2RayTxt.open("../ray_stats/bounce2Ray.txt", std::ios::out);
-  bounce3RayTxt.open("../ray_stats/bounce3Ray.txt", std::ios::out);
-  bounce4RayTxt.open("../ray_stats/bounce4Ray.txt", std::ios::out);
-  bounce5RayTxt.open("../ray_stats/bounce5Ray.txt", std::ios::out);
-  bounce6RayTxt.open("../ray_stats/bounce6Ray.txt", std::ios::out);
-  bounce7RayTxt.open("../ray_stats/bounce7Ray.txt", std::ios::out);
-  primaryIntersectionTxt.open("../ray_stats/primaryIntersection.txt", std::ios::out);
-  bounce1IntersectionTxt.open("../ray_stats/bounce1Intersection.txt", std::ios::out);
-  bounce2IntersectionTxt.open("../ray_stats/bounce2Intersection.txt", std::ios::out);
-  bounce3IntersectionTxt.open("../ray_stats/bounce3Intersection.txt", std::ios::out);
-  bounce4IntersectionTxt.open("../ray_stats/bounce4Intersection.txt", std::ios::out);
-  bounce5IntersectionTxt.open("../ray_stats/bounce5Intersection.txt", std::ios::out);
-  bounce6IntersectionTxt.open("../ray_stats/bounce6Intersection.txt", std::ios::out);
-  bounce7IntersectionTxt.open("../ray_stats/bounce7Intersection.txt", std::ios::out);
+  primaryRayTxt.open("../generated_files/primaryRay.txt", std::ios::out);
+  bounce1RayTxt.open("../generated_files/bounce1Ray.txt", std::ios::out);
+  bounce2RayTxt.open("../generated_files/bounce2Ray.txt", std::ios::out);
+  bounce3RayTxt.open("../generated_files/bounce3Ray.txt", std::ios::out);
+  bounce4RayTxt.open("../generated_files/bounce4Ray.txt", std::ios::out);
+  bounce5RayTxt.open("../generated_files/bounce5Ray.txt", std::ios::out);
+  bounce6RayTxt.open("../generated_files/bounce6Ray.txt", std::ios::out);
+  bounce7RayTxt.open("../generated_files/bounce7Ray.txt", std::ios::out);
+  primaryIntersectionTxt.open("../generated_files/primaryIntersection.txt", std::ios::out);
+  bounce1IntersectionTxt.open("../generated_files/bounce1Intersection.txt", std::ios::out);
+  bounce2IntersectionTxt.open("../generated_files/bounce2Intersection.txt", std::ios::out);
+  bounce3IntersectionTxt.open("../generated_files/bounce3Intersection.txt", std::ios::out);
+  bounce4IntersectionTxt.open("../generated_files/bounce4Intersection.txt", std::ios::out);
+  bounce5IntersectionTxt.open("../generated_files/bounce5Intersection.txt", std::ios::out);
+  bounce6IntersectionTxt.open("../generated_files/bounce6Intersection.txt", std::ios::out);
+  bounce7IntersectionTxt.open("../generated_files/bounce7Intersection.txt", std::ios::out);
 #endif
 
 #ifdef RUN_SEQUENTIAL

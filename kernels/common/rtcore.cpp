@@ -282,18 +282,18 @@ namespace embree
 	 * 	<64-bit node id><8-bit node type (1 for inner node, 2 for leaf node)><write 8-bit number of leaf children (primitives)>
 	 * 	<6 32-bit float coordinates for the leaf node (writes most significant float byte first)>
 	 */
-	std::ofstream bvhbin("../current_test/bvh.bin", std::ios::out | std::ios::binary);
+	std::ofstream bvhbin("../generated_files/bvh.bin", std::ios::out | std::ios::binary);
 	  
 	/* create binary files for the primitives within the bvh.
 	 * Structure of bvhbin file is as follows:
 	 * 	<64-bit node id><8-bit number of primitives in leaf node><32-bit geometry id><32-bit primitive id>
 	 * 	<9 32-bit float coordinates for the leaf node (writes most significant float byte first)>
 	 */
-	std::ofstream primbin("../current_test/prim.bin", std::ios::out | std::ios::binary);
+	std::ofstream primbin("../generated_files/prim.bin", std::ios::out | std::ios::binary);
 
 	/* If txt files are desired instead, uncomment the two lines below and comment out the bin file creation lines. */
-	std::ofstream bvhtxt("../current_test/bvh.txt");
-	std::ofstream primtxt("../current_test/prim.txt");
+	std::ofstream bvhtxt("../generated_files/bvh.txt");
+	std::ofstream primtxt("../generated_files/prim.txt");
     /**/
 
 	// NOTE: the current code only supports scenes with only triangles (for now)
